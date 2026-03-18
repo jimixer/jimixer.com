@@ -151,17 +151,45 @@ export class WebsiteStack extends cdk.Stack {
       priceClass: cloudfront.PriceClass.PRICE_CLASS_200,
     });
 
+    // CloudFront Distribution for Gallery Bucket
+    const galleryDistribution = new cloudfront.Distribution(
+      this,
+      "GalleryDistribution",
+      {
+        defaultBehavior: {
+          origin: new origins.S3Origin(galleryBucket),
+          viewerProtocolPolicy:
+            cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
+          cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD,
+          compress: true,
+        },
+        domainNames: [`gallery.${domainName}`],
+        certificate,
+        priceClass: cloudfront.PriceClass.PRICE_CLASS_200,
+      }
+    );
+
     // Route53 Hosted Zone (assuming it already exists)
     const hostedZone = route53.HostedZone.fromLookup(this, "HostedZone", {
       domainName,
     });
 
-    // Route53 A Record
+    // Route53 A Record for main website
     new route53.ARecord(this, "AliasRecord", {
       zone: hostedZone,
       recordName: domainName,
       target: route53.RecordTarget.fromAlias(
         new targets.CloudFrontTarget(distribution)
+      ),
+    });
+
+    // Route53 A Record for gallery subdomain
+    new route53.ARecord(this, "GalleryAliasRecord", {
+      zone: hostedZone,
+      recordName: `gallery.${domainName}`,
+      target: route53.RecordTarget.fromAlias(
+        new targets.CloudFrontTarget(galleryDistribution)
       ),
     });
 
@@ -191,9 +219,19 @@ export class WebsiteStack extends cdk.Stack {
       description: "Gallery S3 Bucket Name",
     });
 
-    new cdk.CfnOutput(this, "GalleryBucketURL", {
-      value: galleryBucket.bucketWebsiteUrl,
-      description: "Gallery S3 Bucket URL",
+    new cdk.CfnOutput(this, "GalleryDistributionId", {
+      value: galleryDistribution.distributionId,
+      description: "Gallery CloudFront Distribution ID",
+    });
+
+    new cdk.CfnOutput(this, "GalleryDistributionDomainName", {
+      value: galleryDistribution.distributionDomainName,
+      description: "Gallery CloudFront Distribution Domain Name",
+    });
+
+    new cdk.CfnOutput(this, "GalleryURL", {
+      value: `https://gallery.${domainName}`,
+      description: "Gallery URL",
     });
   }
 }

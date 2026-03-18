@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { GalleryContent } from "@/types/content";
+import { buildImageUrl } from "@/lib/image-url";
 
 interface AvatarDetailClientProps {
   avatar: GalleryContent;
@@ -12,6 +13,8 @@ interface AvatarDetailClientProps {
 export function AvatarDetailClient({ avatar }: AvatarDetailClientProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const mainImageUrl = buildImageUrl(avatar.image);
 
   const handleDelete = async () => {
     if (
@@ -79,11 +82,11 @@ export function AvatarDetailClient({ avatar }: AvatarDetailClientProps) {
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               メイン画像
             </h3>
-            {avatar.image ? (
+            {mainImageUrl ? (
               <div className="aspect-square max-w-md bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={avatar.image}
+                  src={mainImageUrl}
                   alt={avatar.avatarName}
                   className="w-full h-full object-cover"
                 />
@@ -118,19 +121,22 @@ export function AvatarDetailClient({ avatar }: AvatarDetailClientProps) {
           </p>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {avatar.images.map((image, index) => (
-              <div
-                key={index}
-                className="aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={image.url}
-                  alt={`${avatar.avatarName} - ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            ))}
+            {avatar.images.map((image, index) => {
+              const imageUrl = buildImageUrl(image.url);
+              return (
+                <div
+                  key={index}
+                  className="aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={imageUrl}
+                    alt={`${avatar.avatarName} - ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
