@@ -49,15 +49,16 @@ export async function POST(
       // Upload to S3
       const uploadResult = await uploadToS3(webpBuffer, s3Key);
 
+      // Store as relative path (not absolute URL)
       uploadedImages.push({
-        url: uploadResult.url,
+        url: `/${uploadResult.key}`,
       });
     }
 
     // Update gallery.json
     avatar.images.push(...uploadedImages);
 
-    // Set main image if not set
+    // Set main image if not set (use relative path)
     if (!avatar.image && uploadedImages.length > 0) {
       avatar.image = uploadedImages[0].url;
     }
