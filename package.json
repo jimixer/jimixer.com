@@ -22,14 +22,18 @@
   ],
   "scripts": {
     "dev": "npm run dev --workspace=website",
+    "dev:gallery": "npm run dev --workspace=gallery-manager",
     "build": "npm run build --workspace=website",
+    "build:gallery": "npm run build --workspace=gallery-manager",
     "cdk": "npm run cdk --workspace=infrastructure",
     "deploy:infra": "npm run deploy --workspace=infrastructure",
-    "deploy:site": "npm run deploy:site --workspace=infrastructure"
+    "deploy:site": "npm run deploy:site --workspace=infrastructure",
+    "test:ci": "npm run build --workspace=website && npm run build --workspace=gallery-manager && npm run build --workspace=infrastructure"
   },
   "workspaces": [
     "website",
-    "infrastructure"
+    "infrastructure",
+    "gallery-manager"
   ],
   "engines": {
     "node": ">=20.0.0"

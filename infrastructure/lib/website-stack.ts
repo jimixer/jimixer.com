@@ -34,6 +34,32 @@ export class WebsiteStack extends cdk.Stack {
       certificateArn
     );
 
+    // S3 Bucket for gallery images
+    const galleryBucket = new s3.Bucket(this, "GalleryBucket", {
+      bucketName: `gallery.${domainName}`,
+      publicReadAccess: true,
+      blockPublicAccess: new s3.BlockPublicAccess({
+        blockPublicAcls: false,
+        blockPublicPolicy: false,
+        ignorePublicAcls: false,
+        restrictPublicBuckets: false,
+      }),
+      cors: [
+        {
+          allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.PUT, s3.HttpMethods.POST],
+          allowedOrigins: [
+            "http://localhost:3001", // ローカル開発環境
+            // Web デプロイ時に追加予定:
+            // `https://manager.${domainName}`, など
+          ],
+          allowedHeaders: ["*"],
+          maxAge: 3000,
+        },
+      ],
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      autoDeleteObjects: false,
+    });
+
     // CloudFront Origin Access Identity
     const oai = new cloudfront.OriginAccessIdentity(this, "OAI");
     websiteBucket.grantRead(oai);
@@ -125,17 +151,45 @@ export class WebsiteStack extends cdk.Stack {
       priceClass: cloudfront.PriceClass.PRICE_CLASS_200,
     });
 
+    // CloudFront Distribution for Gallery Bucket
+    const galleryDistribution = new cloudfront.Distribution(
+      this,
+      "GalleryDistribution",
+      {
+        defaultBehavior: {
+          origin: new origins.S3Origin(galleryBucket),
+          viewerProtocolPolicy:
+            cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
+          cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD,
+          compress: true,
+        },
+        domainNames: [`gallery.${domainName}`],
+        certificate,
+        priceClass: cloudfront.PriceClass.PRICE_CLASS_200,
+      }
+    );
+
     // Route53 Hosted Zone (assuming it already exists)
     const hostedZone = route53.HostedZone.fromLookup(this, "HostedZone", {
       domainName,
     });
 
-    // Route53 A Record
+    // Route53 A Record for main website
     new route53.ARecord(this, "AliasRecord", {
       zone: hostedZone,
       recordName: domainName,
       target: route53.RecordTarget.fromAlias(
         new targets.CloudFrontTarget(distribution)
+      ),
+    });
+
+    // Route53 A Record for gallery subdomain
+    new route53.ARecord(this, "GalleryAliasRecord", {
+      zone: hostedZone,
+      recordName: `gallery.${domainName}`,
+      target: route53.RecordTarget.fromAlias(
+        new targets.CloudFrontTarget(galleryDistribution)
       ),
     });
 
@@ -158,6 +212,26 @@ export class WebsiteStack extends cdk.Stack {
     new cdk.CfnOutput(this, "WebsiteURL", {
       value: `https://${domainName}`,
       description: "Website URL",
+    });
+
+    new cdk.CfnOutput(this, "GalleryBucketName", {
+      value: galleryBucket.bucketName,
+      description: "Gallery S3 Bucket Name",
+    });
+
+    new cdk.CfnOutput(this, "GalleryDistributionId", {
+      value: galleryDistribution.distributionId,
+      description: "Gallery CloudFront Distribution ID",
+    });
+
+    new cdk.CfnOutput(this, "GalleryDistributionDomainName", {
+      value: galleryDistribution.distributionDomainName,
+      description: "Gallery CloudFront Distribution Domain Name",
+    });
+
+    new cdk.CfnOutput(this, "GalleryURL", {
+      value: `https://gallery.${domainName}`,
+      description: "Gallery URL",
     });
   }
 }

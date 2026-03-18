@@ -4,13 +4,33 @@
     "image": "/gallery/milltina/milltina-08.webp",
     "avatarName": "Milltina",
     "images": [
-      { "url": "/gallery/milltina/milltina-01.webp" },
-      { "url": "/gallery/milltina/milltina-02.webp" },
-      { "url": "/gallery/milltina/milltina-03.webp" },
-      { "url": "/gallery/milltina/milltina-04.webp" },
-      { "url": "/gallery/milltina/milltina-05.webp" },
-      { "url": "/gallery/milltina/milltina-06.webp" },
-      { "url": "/gallery/milltina/milltina-07.webp" }
+      {
+        "url": "/gallery/milltina/milltina-01.webp"
+      },
+      {
+        "url": "/gallery/milltina/milltina-02.webp"
+      },
+      {
+        "url": "/gallery/milltina/milltina-03.webp"
+      },
+      {
+        "url": "/gallery/milltina/milltina-04.webp"
+      },
+      {
+        "url": "/gallery/milltina/milltina-05.webp"
+      },
+      {
+        "url": "/gallery/milltina/milltina-06.webp"
+      },
+      {
+        "url": "/gallery/milltina/milltina-07.webp"
+      },
+      {
+        "url": "/gallery/milltina/milltina-vrchat-2026-03-18-03-01-17-305-1080x1920-1773804567695.webp"
+      },
+      {
+        "url": "/gallery/milltina/milltina-vrchat-2026-03-18-03-03-02-556-1080x1920-1773806543024.webp"
+      }
     ]
   },
   {
@@ -18,11 +38,21 @@
     "image": "/gallery/kipfel/kipfel-05.webp",
     "avatarName": "Kipfel",
     "images": [
-      { "url": "/gallery/kipfel/kipfel-01.webp" },
-      { "url": "/gallery/kipfel/kipfel-02.webp" },
-      { "url": "/gallery/kipfel/kipfel-03.webp" },
-      { "url": "/gallery/kipfel/kipfel-04.webp" },
-      { "url": "/gallery/kipfel/kipfel-05.webp" }
+      {
+        "url": "/gallery/kipfel/kipfel-01.webp"
+      },
+      {
+        "url": "/gallery/kipfel/kipfel-02.webp"
+      },
+      {
+        "url": "/gallery/kipfel/kipfel-03.webp"
+      },
+      {
+        "url": "/gallery/kipfel/kipfel-04.webp"
+      },
+      {
+        "url": "/gallery/kipfel/kipfel-05.webp"
+      }
     ]
   }
 ]
