@@ -34,6 +34,32 @@ export class WebsiteStack extends cdk.Stack {
       certificateArn
     );
 
+    // S3 Bucket for gallery images
+    const galleryBucket = new s3.Bucket(this, "GalleryBucket", {
+      bucketName: `gallery.${domainName}`,
+      publicReadAccess: true,
+      blockPublicAccess: new s3.BlockPublicAccess({
+        blockPublicAcls: false,
+        blockPublicPolicy: false,
+        ignorePublicAcls: false,
+        restrictPublicBuckets: false,
+      }),
+      cors: [
+        {
+          allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.PUT, s3.HttpMethods.POST],
+          allowedOrigins: [
+            "http://localhost:3001", // ローカル開発環境
+            // Web デプロイ時に追加予定:
+            // `https://manager.${domainName}`, など
+          ],
+          allowedHeaders: ["*"],
+          maxAge: 3000,
+        },
+      ],
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      autoDeleteObjects: false,
+    });
+
     // CloudFront Origin Access Identity
     const oai = new cloudfront.OriginAccessIdentity(this, "OAI");
     websiteBucket.grantRead(oai);
@@ -158,6 +184,16 @@ export class WebsiteStack extends cdk.Stack {
     new cdk.CfnOutput(this, "WebsiteURL", {
       value: `https://${domainName}`,
       description: "Website URL",
+    });
+
+    new cdk.CfnOutput(this, "GalleryBucketName", {
+      value: galleryBucket.bucketName,
+      description: "Gallery S3 Bucket Name",
+    });
+
+    new cdk.CfnOutput(this, "GalleryBucketURL", {
+      value: galleryBucket.bucketWebsiteUrl,
+      description: "Gallery S3 Bucket URL",
     });
   }
 }
