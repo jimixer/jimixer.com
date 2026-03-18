@@ -1,4 +1,5 @@
 import { getGalleryItems } from "@/lib/gallery-loader";
+import { buildImageUrl } from "@/lib/image-url";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -21,7 +22,7 @@ export default function GalleryPage() {
                 <div className="relative w-full h-full overflow-hidden">
                   <Image
                     fill
-                    src={item.image}
+                    src={buildImageUrl(item.image)}
                     alt={item.avatarName}
                     sizes="(max-width: 768px) 100vw, 75vh"
                     className="object-cover transition-all duration-500 md:group-hover:scale-105 md:group-hover:brightness-110"

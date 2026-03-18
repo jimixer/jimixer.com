@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import { buildImageUrl } from "@/lib/image-url";
 import type { GalleryImage } from "@/types/gallery";
 
 interface GalleryGridProps {
@@ -44,7 +45,7 @@ export default function GalleryGrid({ images, avatarName }: GalleryGridProps) {
           >
             <Image
               fill
-              src={image.url}
+              src={buildImageUrl(image.url)}
               alt={`${avatarName} - ${index + 1}`}
               sizes="(max-width: 768px) 50vw, 33vw"
               className="object-cover transition-transform duration-300 hover:scale-105"
@@ -69,7 +70,7 @@ export default function GalleryGrid({ images, avatarName }: GalleryGridProps) {
 
           {/* メイン画像 */}
           <Image
-            src={images[selectedIndex].url}
+            src={buildImageUrl(images[selectedIndex].url)}
             alt={`${avatarName} - ${selectedIndex + 1}`}
             width={0}
             height={0}
