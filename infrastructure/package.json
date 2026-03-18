@@ -1,0 +1,25 @@
+{
+  "name": "infrastructure",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AWS CDK infrastructure for jimixer.com",
+  "license": "MIT",
+  "author": "jimixer",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk",
+    "deploy": "cdk deploy --all",
+    "deploy:site": "npm run build --workspace=../website && aws s3 sync ../website/out/ s3://$(aws cloudformation describe-stacks --stack-name JimixerComStack --query 'Stacks[0].Outputs[?OutputKey==`BucketName`].OutputValue' --output text) --delete"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.120.0",
+    "constructs": "^10.3.0",
+    "source-map-support": "^0.5.21"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "aws-cdk": "^2.120.0",
+    "typescript": "^5.3.3"
+  }
+}

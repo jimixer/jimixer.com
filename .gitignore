@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+
+# Compiled TypeScript files (except CloudFront Functions)
+infrastructure/lib/*.js
+infrastructure/lib/*.d.ts
+infrastructure/bin/*.js
+infrastructure/bin/*.d.ts
+
+# CloudFront Functions are source files (NOT compiled)
+!infrastructure/cloudfront-functions/**/*.js
+
+# CDK
+infrastructure/cdk.out/
+infrastructure/.cdk.staging/
+
+# Environment variables
+.env
+.env*.local
+.envrc
+
+# 画像インポート用ステージングディレクトリ
+staging/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+coverage/
+.nyc_output/
+
+# AWS
+.aws-sam/
+
+# Misc
+*.pem

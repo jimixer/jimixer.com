@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+cdk.out/
+
+# Generated files
+*.d.ts
+*.js.map
+
+# Lock files
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# CDK
+infrastructure/cdk.out/
+infrastructure/.cdk.staging/
+
+# Content (preserve formatting)
+content/
+
+# Markdown (preserve formatting)
+*.md

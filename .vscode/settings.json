@@ -1,0 +1,29 @@
+{
+  "files.exclude": {
+    "**/*.js": {
+      "when": "$(basename).ts"
+    },
+    "**/*.d.ts": {
+      "when": "$(basename).ts"
+    },
+    "**/*.js.map": true,
+    "**/cdk.out": true,
+    "**/.next": true,
+    "**/out": true,
+    // CloudFront Functions are source files, not compiled
+    "infrastructure/cloudfront-functions/**/*.js": false
+  },
+  "search.exclude": {
+    "**/*.js": {
+      "when": "$(basename).ts"
+    },
+    "**/*.d.ts": {
+      "when": "$(basename).ts"
+    },
+    "**/cdk.out": true,
+    "**/.next": true,
+    "**/out": true,
+    // CloudFront Functions should be searchable
+    "infrastructure/cloudfront-functions/**/*.js": false
+  }
+}

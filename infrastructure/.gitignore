@@ -1,0 +1,19 @@
+# CDK
+cdk.out/
+.cdk.staging/
+
+# Compiled TypeScript files
+lib/*.js
+lib/*.d.ts
+bin/*.js
+bin/*.d.ts
+!jest.config.js
+
+# CloudFront Functions are source files (NOT compiled)
+!cloudfront-functions/**/*.js
+
+# Dependencies
+node_modules/
+
+# Misc
+.DS_Store

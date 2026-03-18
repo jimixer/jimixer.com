@@ -1,0 +1,41 @@
+{
+  "name": "jimixer-com",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Personal website and tech stack showcase for jimixer.com",
+  "license": "MIT",
+  "author": "jimixer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jimixer/jimixer.com"
+  },
+  "bugs": {
+    "url": "https://github.com/jimixer/jimixer.com/issues"
+  },
+  "homepage": "https://jimixer.com",
+  "keywords": [
+    "personal-website",
+    "nextjs",
+    "aws-cdk",
+    "cloudfront",
+    "static-site"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=website",
+    "build": "npm run build --workspace=website",
+    "cdk": "npm run cdk --workspace=infrastructure",
+    "deploy:infra": "npm run deploy --workspace=infrastructure",
+    "deploy:site": "npm run deploy:site --workspace=infrastructure"
+  },
+  "workspaces": [
+    "website",
+    "infrastructure"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "volta": {
+    "node": "20.20.0",
+    "npm": "10.8.2"
+  }
+}
