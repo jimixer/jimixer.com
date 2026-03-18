@@ -1,12 +1,16 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import type { UploadResult } from "@/types/upload";
 
+/**
+ * S3 Client configuration
+ * AWS SDK will automatically use credentials from:
+ * 1. Environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+ * 2. AWS Profile (AWS_PROFILE environment variable)
+ * 3. Default profile (~/.aws/credentials)
+ */
 const s3Client = new S3Client({
   region: process.env.AWS_REGION || "ap-northeast-1",
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
-  },
+  // credentialsを明示的に指定しない = デフォルト認証チェーンを使用
 });
 
 /**
