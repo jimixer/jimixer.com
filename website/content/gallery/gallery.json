@@ -54,5 +54,18 @@
         "url": "/gallery/kipfel/kipfel-05.webp"
       }
     ]
+  },
+  {
+    "id": "manuka",
+    "image": "/gallery/manuka/manuka-vrchat-2026-03-19-05-43-45-418-1080x1920-1773896143280.webp",
+    "avatarName": "Manuka",
+    "images": [
+      {
+        "url": "/gallery/manuka/manuka-vrchat-2026-03-19-05-43-45-418-1080x1920-1773896143280.webp"
+      },
+      {
+        "url": "/gallery/manuka/manuka-vrchat-2026-03-19-13-11-04-029-1080x1920-1773896144225.webp"
+      }
+    ]
   }
 ]
