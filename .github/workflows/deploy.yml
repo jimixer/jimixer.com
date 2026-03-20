@@ -43,7 +43,14 @@ jobs:
             --query 'Stacks[0].Outputs[?OutputKey==`BucketName`].OutputValue' \
             --output text)
 
-          aws s3 sync website/out/ s3://$BUCKET_NAME --delete --cache-control "public, max-age=31536000, immutable"
+          # ハッシュ付き静的アセットは長期キャッシュ
+          aws s3 sync website/out/_next/static/ s3://$BUCKET_NAME/_next/static/ \
+            --delete --cache-control "public, max-age=31536000, immutable"
+
+          # HTML・sitemap・robots.txt 等は毎回再検証
+          aws s3 sync website/out/ s3://$BUCKET_NAME --delete \
+            --exclude "_next/static/*" \
+            --cache-control "public, no-cache"
 
       - name: Invalidate CloudFront cache
         run: |
