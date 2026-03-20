@@ -24,10 +24,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: |
-          npm ci
-          npm ci --workspace=website
-          npm ci --workspace=infrastructure
+        run: npm ci
 
       - name: Build website
         run: npm run build --workspace=website
