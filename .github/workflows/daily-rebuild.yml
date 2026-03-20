@@ -24,9 +24,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: |
-          npm ci
-          npm ci --workspace=website
+        run: npm ci
 
       - name: Build website (fetch latest RSS)
         run: npm run build --workspace=website
@@ -45,7 +43,14 @@ jobs:
             --query 'Stacks[0].Outputs[?OutputKey==`BucketName`].OutputValue' \
             --output text)
 
-          aws s3 sync website/out/ s3://$BUCKET_NAME --delete --cache-control "public, max-age=3600"
+          # ハッシュ付き静的アセットは長期キャッシュ
+          aws s3 sync website/out/_next/static/ s3://$BUCKET_NAME/_next/static/ \
+            --delete --cache-control "public, max-age=31536000, immutable"
+
+          # HTML・sitemap・robots.txt など動的コンテンツは短期キャッシュ
+          aws s3 sync website/out/ s3://$BUCKET_NAME --delete \
+            --exclude "_next/static/*" \
+            --cache-control "public, max-age=3600"
 
       - name: Invalidate CloudFront cache
         run: |
@@ -56,4 +61,4 @@ jobs:
 
           aws cloudfront create-invalidation \
             --distribution-id $DISTRIBUTION_ID \
-            --paths "/notes/*"
+            --paths "/notes/*" "/sitemap.xml"
