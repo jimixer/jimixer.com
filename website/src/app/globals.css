@@ -5,6 +5,11 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Gallery card expanded width: 100vh × (9/16) to fit portrait FHD aspect ratio */
+    --gallery-card-expanded-width: 56.25vh;
+  }
+
   html {
     scrollbar-gutter: stable;
   }

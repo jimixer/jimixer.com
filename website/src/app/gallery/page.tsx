@@ -18,14 +18,15 @@ export default function GalleryPage() {
               className="group relative flex-shrink-0"
             >
               {/* モバイル: 全幅 / デスクトップ: サムネイル（ホバーで拡大） */}
-              <div className="relative h-[50vh] w-full md:h-screen md:w-48 md:group-hover:w-[75vh] bg-neutral-900 border-b md:border-b-0 md:border-r border-white/10 transition-all duration-500 ease-out md:group-hover:shadow-2xl">
+              <div className="relative h-[50vh] w-full md:h-screen md:w-48 md:group-hover:w-[var(--gallery-card-expanded-width)] bg-neutral-900 border-b md:border-b-0 md:border-r border-white/10 transition-all duration-500 ease-out md:group-hover:shadow-2xl">
                 <div className="relative w-full h-full overflow-hidden">
                   <Image
-                    fill
                     src={buildImageUrl(item.image)}
                     alt={item.avatarName}
+                    width={1080}
+                    height={1920}
                     sizes="(max-width: 768px) 100vw, 75vh"
-                    className="object-cover transition-all duration-500 md:group-hover:scale-105 md:group-hover:brightness-110"
+                    className="absolute top-0 left-1/2 -translate-x-1/2 h-full w-auto max-w-none transition-all duration-500 md:group-hover:brightness-110"
                   />
 
                   {/* モバイル用常時表示タイトル */}
