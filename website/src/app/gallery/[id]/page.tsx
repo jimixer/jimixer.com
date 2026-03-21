@@ -21,10 +21,12 @@ export default function AvatarDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const images = avatar.images.slice().reverse();
+
   return (
     <div className="relative min-h-screen">
       <div className="max-w-5xl mx-auto px-4 md:px-8 py-20 md:py-12">
-        <GalleryGrid images={avatar.images} avatarName={avatar.avatarName} />
+        <GalleryGrid images={images} avatarName={avatar.avatarName} />
       </div>
     </div>
   );
