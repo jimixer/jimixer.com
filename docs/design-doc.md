@@ -81,15 +81,7 @@
   * アバター単位での管理
   * gallery.jimixer.com からの配信とJSON API提供
 
-### **C. Stack Page**
-
-**実装:** `website/src/app/stack/page.tsx`
-
-* 使用技術スタックを静的表示
-* このサイト自体のソースコード構成をセルフリファレンス的に紹介
-* 「このサイト自体が自分の Policy の産物」を示す
-
-### **D. Reusable Components**
+### **C. Reusable Components**
 
 **実装:** `website/src/components/ui/SectionCard.tsx`
 

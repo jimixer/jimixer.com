@@ -16,7 +16,6 @@ export default function Header() {
   const navLinks = [
     { href: "/gallery/", label: "Gallery" },
     { href: "/notes/", label: "Notes" },
-    { href: "/stack/", label: "Stack" },
   ];
 
   return (
