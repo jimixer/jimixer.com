@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ExternalLinkIcon from "@/components/icons/ExternalLinkIcon";
 
 export default function HomePage() {
   return (
@@ -37,6 +38,24 @@ export default function HomePage() {
             >
               Gallery →
             </Link>
+            <a
+              href="https://x.com/jimixer"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-2 border border-white/30 hover:bg-white/10 text-white font-mono text-sm transition flex items-center gap-2"
+            >
+              Twitter
+              <ExternalLinkIcon className="w-4 h-4 text-white/50" />
+            </a>
+            <a
+              href="https://vrchat.com/home/user/usr_e9fcf8a7-3e14-46af-a490-e074e6a0f971"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-2 border border-white/30 hover:bg-white/10 text-white font-mono text-sm transition flex items-center gap-2"
+            >
+              VRChat
+              <ExternalLinkIcon className="w-4 h-4 text-white/50" />
+            </a>
           </div>
         </div>
       </div>
