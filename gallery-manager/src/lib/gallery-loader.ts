@@ -37,7 +37,7 @@ export async function loadGalleryData(): Promise<GalleryContent[]> {
  * 2. VRChat スクリーンショット ({avatarId}-vrchat-YYYY-MM-DD-HH-mm-ss-...) → 日時昇順
  * 3. その他 → ファイル名末尾の Unix タイムスタンプ (ms) で昇順
  */
-function sortImages(
+export function sortImages(
   images: GalleryContent["images"],
   avatarId: string
 ): GalleryContent["images"] {
