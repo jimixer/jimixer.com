@@ -30,6 +30,41 @@ export async function loadGalleryData(): Promise<GalleryContent[]> {
 }
 
 /**
+ * images 配列を日付昇順でソートする
+ *
+ * 優先順位:
+ * 1. 番号付きファイル ({avatarId}-\d+.webp) → 先頭に固定
+ * 2. VRChat スクリーンショット ({avatarId}-vrchat-YYYY-MM-DD-HH-mm-ss-...) → 日時昇順
+ * 3. その他 → ファイル名末尾の Unix タイムスタンプ (ms) で昇順
+ */
+function sortImages(
+  images: GalleryContent["images"],
+  avatarId: string
+): GalleryContent["images"] {
+  const numberedPattern = new RegExp(`/${avatarId}-\\d+\\.webp$`);
+  const vrchatPattern = /vrchat-(\d{4})-(\d{2})-(\d{2})-(\d{2})-(\d{2})-(\d{2})/;
+  const timestampPattern = /-(\d{10,})\.webp$/;
+
+  function sortKey(url: string): string {
+    if (numberedPattern.test(url)) {
+      // 番号付き: 先頭固定。番号でサブソート
+      const num = url.match(/-(\d+)\.webp$/)?.[1] ?? "0";
+      return `0-${num.padStart(6, "0")}`;
+    }
+    const vrchat = url.match(vrchatPattern);
+    if (vrchat) {
+      // "YYYY-MM-DD-HH-mm-ss" をそのまま文字列比較キーに
+      const [, yyyy, mm, dd, hh, min, ss] = vrchat;
+      return `1-${yyyy}${mm}${dd}${hh}${min}${ss}`;
+    }
+    const ts = url.match(timestampPattern)?.[1] ?? "0";
+    return `2-${ts.padStart(16, "0")}`;
+  }
+
+  return [...images].sort((a, b) => sortKey(a.url).localeCompare(sortKey(b.url)));
+}
+
+/**
  * gallery.json を更新
  */
 export async function saveGalleryData(
@@ -41,12 +76,12 @@ export async function saveGalleryData(
   );
 
   try {
-    // GalleryContent から既存フォーマットに変換
+    // GalleryContent から既存フォーマットに変換（images は日付昇順にソート）
     const items = data.map((item) => ({
       id: item.id,
       image: item.image,
       avatarName: item.avatarName,
-      images: item.images,
+      images: sortImages(item.images, item.id),
     }));
 
     await fs.promises.writeFile(
