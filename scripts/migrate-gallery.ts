@@ -18,11 +18,10 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import sharp from "sharp";
 import { stringify as stringifyYaml } from "yaml";
 
 import { newPhotoId, sidecarBasename } from "../packages/gallery-schema/src/content.js";
-import type { Photo } from "../packages/gallery-schema/src/types.js";
+import { measureOriginal } from "../packages/gallery-schema/src/images.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CONTENT_DIR = path.join(ROOT, "website/content");
@@ -92,26 +91,6 @@ function capturedAtOf(original: string): string {
   return `${m[1]}T${m[2]}:${m[3]}:${m[4]}`;
 }
 
-function toHex({ r, g, b }: { r: number; g: number; b: number }): string {
-  return `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
-}
-
-/**
- * 原本を 1 度だけ開いて実寸と代表色を得る。
- * ファイル名の解像度表記は実物と食い違うことがあるため、必ず実測する。
- */
-async function probe(file: string): Promise<Pick<Photo, "width" | "height" | "dominantColor">> {
-  const image = sharp(file);
-  const [metadata, stats] = await Promise.all([image.metadata(), image.stats()]);
-  if (!metadata.width || !metadata.height) throw new Error(`実寸を読めません: ${file}`);
-
-  return {
-    width: metadata.width,
-    height: metadata.height,
-    dominantColor: toHex(stats.dominant),
-  };
-}
-
 async function exists(file: string): Promise<boolean> {
   return fs.access(file).then(
     () => true,
@@ -150,7 +129,7 @@ async function main(): Promise<void> {
       usedIds.add(photoId);
 
       const capturedAt = capturedAtOf(original);
-      const measured = await probe(originalPath);
+      const measured = await measureOriginal(originalPath);
       const sidecar = path.join(variantDir, sidecarBasename(capturedAt, photoId));
 
       if (url === item.image) coverPhotoId = photoId;

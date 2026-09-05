@@ -29,7 +29,10 @@
     "deploy:infra": "npm run deploy --workspace=infrastructure",
     "deploy:site": "npm run deploy:site --workspace=infrastructure",
     "test:ci": "npm run build --workspace=website && npm run build --workspace=gallery-manager && npm run build --workspace=infrastructure",
-    "test": "npm run test --workspace=@jimixer/gallery-schema && npm run test --workspace=gallery-manager"
+    "test": "npm run test --workspace=@jimixer/gallery-schema && npm run test --workspace=gallery-manager",
+    "gallery:derivatives": "tsx scripts/generate-derivatives.ts",
+    "gallery:upload-originals": "tsx scripts/upload-originals.ts",
+    "gallery:upload-derivatives": "tsx scripts/upload-derivatives.ts"
   },
   "workspaces": [
     "packages/*",
