@@ -17,8 +17,8 @@ import { fileURLToPath } from "node:url";
 
 import { loadGallery } from "../packages/gallery-schema/src/content";
 import {
+  ALL_DERIVATIVES,
   renderDerivative,
-  STANDARD_DERIVATIVES,
 } from "../packages/gallery-schema/src/images";
 import { photoKey, type DerivativeName } from "../packages/gallery-schema/src/urls";
 import type { ManifestEntry } from "./migrate-gallery";
@@ -42,8 +42,6 @@ async function main(): Promise<void> {
   const index = await loadGallery(CONTENT_DIR);
   const manifest: ManifestEntry[] = JSON.parse(await fs.readFile(MANIFEST, "utf-8"));
   const originalOf = new Map(manifest.map((e) => [e.photoId, e.original]));
-  const coverIds = new Set(index.variants.map((v) => v.coverPhotoId));
-
   const totals = new Map<DerivativeName, number>();
   let written = 0;
   let skipped = 0;
@@ -54,11 +52,7 @@ async function main(): Promise<void> {
       if (!original) throw new Error(`manifest に原本がありません: ${photo.id}`);
       const originalPath = path.join(ORIGINALS_DIR, original);
 
-      const names: DerivativeName[] = coverIds.has(photo.id)
-        ? [...STANDARD_DERIVATIVES, "og"]
-        : [...STANDARD_DERIVATIVES];
-
-      for (const name of names) {
+      for (const name of ALL_DERIVATIVES) {
         const out = path.join(OUT_DIR, photoKey(photo.id, name));
         const already = await fs.stat(out).catch(() => null);
 

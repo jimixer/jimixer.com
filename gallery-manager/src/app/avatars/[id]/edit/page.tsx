@@ -1,20 +1,22 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getGalleryItemById } from "@/lib/gallery-loader";
-import { AvatarEditClient } from "./AvatarEditClient";
 
-interface PageProps {
-  params: {
-    id: string;
-  };
-}
+import { AvatarForm } from "@/components/AvatarForm";
+import { readGallery } from "@/lib/content";
 
-export default async function AvatarEditPage({ params }: PageProps) {
-  const avatar = await getGalleryItemById(params.id);
+export const dynamic = "force-dynamic";
 
-  if (!avatar) {
-    notFound();
-  }
+export default async function EditAvatarPage({ params }: { params: { id: string } }) {
+  const { avatars } = await readGallery();
+  const avatar = avatars.find((a) => a.id === params.id);
 
-  return <AvatarEditClient avatar={avatar} />;
+  if (!avatar) notFound();
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        {avatar.displayName} を編集
+      </h2>
+      <AvatarForm avatar={avatar} />
+    </div>
+  );
 }

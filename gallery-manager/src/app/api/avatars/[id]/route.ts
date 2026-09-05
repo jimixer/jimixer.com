@@ -1,54 +1,51 @@
+import { avatarFileSchema } from "@jimixer/gallery-schema";
+import { deleteAvatar, writeAvatar } from "@jimixer/gallery-schema/content";
 import { NextRequest, NextResponse } from "next/server";
-import { loadGalleryData, saveGalleryData } from "@/lib/gallery-loader";
 
-/**
- * GET /api/avatars/[id] - 特定のアバター取得
- */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+import { contentDir, readGallery } from "@/lib/content";
+import { fail, failFrom } from "@/lib/http";
+
+interface Context {
+  params: { id: string };
+}
+
+export async function PATCH(request: NextRequest, { params }: Context) {
   try {
-    const avatars = await loadGalleryData();
-    const avatar = avatars.find((a) => a.id === params.id);
+    const { avatars } = await readGallery();
+    const current = avatars.find((a) => a.id === params.id);
+    if (!current) return fail("アバターが見つかりません", 404);
 
-    if (!avatar) {
-      return NextResponse.json({ error: "Avatar not found" }, { status: 404 });
+    const parsed = avatarFileSchema.safeParse({ ...current, ...(await request.json()) });
+    if (!parsed.success) {
+      return fail(parsed.error.issues.map((i) => i.message).join(" / "), 400);
     }
 
-    return NextResponse.json({ avatar });
+    await writeAvatar(contentDir(), { id: params.id, ...parsed.data });
+    return NextResponse.json({ avatar: { id: params.id, ...parsed.data } });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to load avatar" },
-      { status: 500 }
-    );
+    return failFrom(error);
   }
 }
 
-/**
- * DELETE /api/avatars/[id] - アバター削除
- */
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(_request: NextRequest, { params }: Context) {
   try {
-    const avatars = await loadGalleryData();
-    const index = avatars.findIndex((a) => a.id === params.id);
-
-    if (index === -1) {
-      return NextResponse.json({ error: "Avatar not found" }, { status: 404 });
+    const { avatars, variants } = await readGallery();
+    if (!avatars.some((a) => a.id === params.id)) {
+      return fail("アバターが見つかりません", 404);
     }
 
-    avatars.splice(index, 1);
-    await saveGalleryData(avatars);
+    // 参照が残ったまま消すと、次の読み込みで全体が検証エラーになる
+    const referencing = variants.filter((v) => v.avatarId === params.id);
+    if (referencing.length > 0) {
+      return fail(
+        `バリアント ${referencing.map((v) => v.id).join(", ")} から参照されています`,
+        409
+      );
+    }
 
+    await deleteAvatar(contentDir(), params.id);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to delete avatar:", error);
-    return NextResponse.json(
-      { error: "Failed to delete avatar" },
-      { status: 500 }
-    );
+    return failFrom(error);
   }
 }

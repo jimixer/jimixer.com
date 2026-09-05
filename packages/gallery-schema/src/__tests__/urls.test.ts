@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   derivativeSize,
   originalKey,
+  photoIdFromOriginalKey,
   photoKey,
   photoSrcSet,
   photoUrl,
@@ -30,6 +31,15 @@ describe("originalKey", () => {
   it("原本は公開プレフィックスの外に置く", () => {
     expect(originalKey("abc1234567")).toBe("originals/abc1234567.png");
     expect(originalKey("abc1234567")).not.toMatch(/^gallery\//);
+  });
+
+  it("拡張子は原本に従う（再エンコードして揃えない）", () => {
+    expect(originalKey("abc1234567", "jpg")).toBe("originals/abc1234567.jpg");
+  });
+
+  it("キーから photoId を取り出せる", () => {
+    expect(photoIdFromOriginalKey(originalKey("abc1234567", "webp"))).toBe("abc1234567");
+    expect(photoIdFromOriginalKey("gallery/abc1234567.webp")).toBeNull();
   });
 });
 

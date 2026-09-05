@@ -59,8 +59,16 @@ export function sidecarBasename(capturedAt: string, photoId: string): string {
   return `${date}-${time}-${photoId}.yml`;
 }
 
+export function avatarPath(contentDir: string, avatarId: string): string {
+  return path.join(contentDir, AVATARS_DIR, `${avatarId}.yml`);
+}
+
 export function variantDir(contentDir: string, variantId: string): string {
   return path.join(contentDir, GALLERY_DIR, variantId);
+}
+
+export function variantPath(contentDir: string, variantId: string): string {
+  return path.join(variantDir(contentDir, variantId), VARIANT_FILE);
 }
 
 export function photoPath(contentDir: string, photo: Photo): string {
@@ -215,6 +223,42 @@ export async function writePhoto(contentDir: string, photo: Photo): Promise<stri
     "utf-8"
   );
   return file;
+}
+
+/** アバターを書く。ID はファイル名が持つので本体には書かない。 */
+export async function writeAvatar(contentDir: string, avatar: Avatar): Promise<string> {
+  const { id, displayName, author, sourceUrl } = avatar;
+  const file = avatarPath(contentDir, id);
+
+  await fs.mkdir(path.dirname(file), { recursive: true });
+  await fs.writeFile(file, stringifyYaml({ displayName, author, sourceUrl }), "utf-8");
+  return file;
+}
+
+/** バリアントを書く。写真は sidecar 側が持つのでここには含めない。 */
+export async function writeVariant(
+  contentDir: string,
+  variant: Omit<Variant, "photos">
+): Promise<string> {
+  const { id, avatarId, displayName, coverPhotoId } = variant;
+  const file = variantPath(contentDir, id);
+
+  await fs.mkdir(path.dirname(file), { recursive: true });
+  await fs.writeFile(
+    file,
+    stringifyYaml({ avatar: avatarId, displayName, coverPhotoId }),
+    "utf-8"
+  );
+  return file;
+}
+
+/** バリアントを写真ごと削除する。S3 側の後始末は呼び出し側の責務。 */
+export async function deleteVariant(contentDir: string, variantId: string): Promise<void> {
+  await fs.rm(variantDir(contentDir, variantId), { recursive: true });
+}
+
+export async function deleteAvatar(contentDir: string, avatarId: string): Promise<void> {
+  await fs.rm(avatarPath(contentDir, avatarId));
 }
 
 /** 写真 1 枚をサイトから降ろす。原本は消さない（docs/adr/0003 を参照）。 */

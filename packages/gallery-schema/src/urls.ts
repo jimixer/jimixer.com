@@ -32,9 +32,29 @@ export function photoKey(photoId: string, name: DerivativeName = "full"): string
   return `gallery/${photoId}-${DERIVATIVE_LONG_EDGE[name]}.webp`;
 }
 
-/** 非公開バケット上の原本キー。公開されることはない。 */
-export function originalKey(photoId: string): string {
-  return `originals/${photoId}.png`;
+/** 原本として受け付ける形式。加工後のファイルが原本になるため PNG に限らない。 */
+export const ORIGINAL_EXTENSIONS = ["png", "jpg", "jpeg", "webp"] as const;
+
+export type OriginalExtension = (typeof ORIGINAL_EXTENSIONS)[number];
+
+/**
+ * 非公開バケット上の原本キー。公開されることはない。
+ *
+ * 拡張子は原本そのものに従う。再エンコードして揃えると、原本を不変に保つ
+ * という契約（docs/adr/0003）に反するため。
+ */
+export function originalKey(photoId: string, ext: OriginalExtension = "png"): string {
+  return `originals/${photoId}.${ext}`;
+}
+
+/** 拡張子を知らずに原本を探すための前方一致。 */
+export function originalPrefix(photoId: string): string {
+  return `originals/${photoId}.`;
+}
+
+/** 原本キーから photoId を取り出す。見つからなければ null。 */
+export function photoIdFromOriginalKey(key: string): string | null {
+  return key.match(/^originals\/([^/.]+)\./)?.[1] ?? null;
 }
 
 export function photoUrl(

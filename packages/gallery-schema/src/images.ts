@@ -13,8 +13,13 @@ export type ImageInput = string | Buffer;
 
 const WEBP_OPTIONS = { quality: 85, effort: 6 } as const;
 
-/** カバー以外に OG は要らないため、既定では生成しない。 */
-export const STANDARD_DERIVATIVES = ["full", "card", "thumb"] as const;
+/**
+ * すべての写真に対して生成する派生物。
+ *
+ * OG をカバーだけに絞ると、カバーを差し替えるたびに原本を取り直して
+ * 生成する経路が必要になる。1 枚あたり数十 KB なので、全件持つほうが安い。
+ */
+export const ALL_DERIVATIVES = ["full", "card", "thumb", "og"] as const;
 
 /**
  * 原本の実測値。ファイル名の解像度表記は当てにならないため、必ずここを通す。
