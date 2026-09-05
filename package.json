@@ -28,9 +28,16 @@
     "cdk": "npm run cdk --workspace=infrastructure",
     "deploy:infra": "npm run deploy --workspace=infrastructure",
     "deploy:site": "npm run deploy:site --workspace=infrastructure",
-    "test:ci": "npm run build --workspace=website && npm run build --workspace=gallery-manager && npm run build --workspace=infrastructure"
+    "test:ci": "npm run build --workspace=website && npm run build --workspace=gallery-manager && npm run build --workspace=infrastructure",
+    "test": "npm run test --workspace=@jimixer/gallery-schema && npm run test --workspace=gallery-manager",
+    "gallery:derivatives": "tsx scripts/generate-derivatives.ts",
+    "gallery:upload-originals": "tsx scripts/upload-originals.ts",
+    "gallery:upload-derivatives": "tsx scripts/upload-derivatives.ts",
+    "gallery:validate": "tsx scripts/validate-content.ts",
+    "gallery:check": "tsx scripts/check-consistency.ts"
   },
   "workspaces": [
+    "packages/*",
     "website",
     "infrastructure",
     "gallery-manager"
@@ -41,5 +48,8 @@
   "volta": {
     "node": "20.20.0",
     "npm": "10.8.2"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.13"
   }
 }

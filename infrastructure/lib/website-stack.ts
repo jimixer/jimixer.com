@@ -60,6 +60,20 @@ export class WebsiteStack extends cdk.Stack {
       autoDeleteObjects: false,
     });
 
+    // S3 Bucket for photo originals
+    // 公開しない。派生物はここから何度でも作り直せるが、原本を失うと取り返せない
+    // （docs/adr/0003-originals-are-immutable-and-gate-publication.md）
+    const originalsBucket = new s3.Bucket(this, "OriginalsBucket", {
+      // ドットを含む名前は仮想ホスト形式の TLS と相性が悪いため使わない
+      bucketName: `${domainName.replace(/\./g, "-")}-originals`,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      // 上書き事故から戻せるようにする。原本は不変という契約の保険
+      versioned: true,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      autoDeleteObjects: false,
+    });
+
     // CloudFront Origin Access Identity
     const oai = new cloudfront.OriginAccessIdentity(this, "OAI");
     websiteBucket.grantRead(oai);
@@ -233,5 +247,10 @@ export class WebsiteStack extends cdk.Stack {
       value: `https://gallery.${domainName}`,
       description: "Gallery URL",
     });
+    new cdk.CfnOutput(this, "OriginalsBucketName", {
+      value: originalsBucket.bucketName,
+      description: "Private bucket holding photo originals",
+    });
+
   }
 }

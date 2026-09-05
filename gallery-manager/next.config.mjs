@@ -1,14 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Server Actions を使用するため output: 'export' は設定しない
-  images: {
-    unoptimized: true,
-  },
-  experimental: {
-    serverActions: {
-      allowedOrigins: ["localhost:3001"],
-    },
-  },
+  // 共有パッケージは TypeScript ソースのまま公開しているため
+  transpilePackages: ['@jimixer/gallery-schema'],
 };
 
 export default nextConfig;

@@ -1,0 +1,38 @@
+{
+  "name": "@jimixer/gallery-schema",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared types, URL derivation and schema validation for the jimixer.com gallery",
+  "license": "MIT",
+  "author": "jimixer",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./content": {
+      "types": "./src/content.ts",
+      "default": "./src/content.ts"
+    },
+    "./images": {
+      "types": "./src/images.ts",
+      "default": "./src/images.ts"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "yaml": "^2.4.0",
+    "zod": "^3.23.0",
+    "sharp": "^0.33.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vitest": "^4.1.2"
+  },
+  "types": "./src/index.ts"
+}
