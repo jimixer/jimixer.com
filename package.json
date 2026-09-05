@@ -34,7 +34,8 @@
     "gallery:upload-originals": "tsx scripts/upload-originals.ts",
     "gallery:upload-derivatives": "tsx scripts/upload-derivatives.ts",
     "gallery:validate": "tsx scripts/validate-content.ts",
-    "gallery:check": "tsx scripts/check-consistency.ts"
+    "gallery:check": "tsx scripts/check-consistency.ts",
+    "gallery:prune-legacy": "tsx scripts/prune-legacy-objects.ts"
   },
   "workspaces": [
     "packages/*",
