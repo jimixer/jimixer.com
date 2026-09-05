@@ -137,7 +137,19 @@ index は**ビルド時にディレクトリを走査して組み立てる**。�
    S3 との突き合わせ（`gallery:check`）は読み取り権限が要るためローカルに置く
    — 整合性が壊れるのは gallery-manager を操作した直後だけで、その場で確認できる。
    権限の内訳は [aws-credentials.md](./aws-credentials.md) を参照。
-8. **インフラの整理**。gallery バケットを OAI/OAC 経由に閉じる。使われていない CORS 設定（`localhost:3001` への PUT/POST 許可。実際の経路はサーバー側 SDK なのでブラウザは S3 と直接通信しない）を削除する。
+8. **インフラの整理**（完了）。gallery バケットの公開読み取りを外し、CloudFront の
+   OAI 経由に限定した。あわせて使われていない CORS 設定（`localhost:3001` への
+   PUT/POST 許可。実際の経路はサーバー側 SDK なのでブラウザは S3 と直接通信しない）を削除。
+
+   **当初「gallery バケットには OAI が無い」と書いていたが、これは誤りだった。**
+   `S3Origin` が distribution ごとに OAI を自動生成しており、実際の問題は
+   `publicReadAccess: true` による公開読み取りポリシー（`Principal: AWS:*`）だった。
+   パス形式の URL で S3 に直接アクセスでき、CloudFront をバイパスできる状態にあった。
+
+   デプロイは 2 段階に分けた。1 度で出すと、バケットポリシーの更新が先に効いて
+   CloudFront の配信設定の伝播を待つ間、画像が数分 403 になりうるため。
+   段階 1 で共有 OAI への読み取り権限を追加（公開読み取りは維持）、
+   伝播を確認してから段階 2 で公開読み取りと CORS を外した。
 
 `sortImages` の廃止に伴い、`gallery-manager` のそのテストも削除される。
 

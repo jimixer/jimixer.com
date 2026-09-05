@@ -35,27 +35,13 @@ export class WebsiteStack extends cdk.Stack {
     );
 
     // S3 Bucket for gallery images
+    // 配信は CloudFront 経由に限る。website バケットと同じ扱いに揃えている
+    //
+    // CORS は設定しない。アップロードの経路は「ブラウザ → gallery-manager の
+    // API Route → サーバー側 AWS SDK」であり、ブラウザが S3 と直接通信することはない
     const galleryBucket = new s3.Bucket(this, "GalleryBucket", {
       bucketName: `gallery.${domainName}`,
-      publicReadAccess: true,
-      blockPublicAccess: new s3.BlockPublicAccess({
-        blockPublicAcls: false,
-        blockPublicPolicy: false,
-        ignorePublicAcls: false,
-        restrictPublicBuckets: false,
-      }),
-      cors: [
-        {
-          allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.PUT, s3.HttpMethods.POST],
-          allowedOrigins: [
-            "http://localhost:3001", // ローカル開発環境
-            // Web デプロイ時に追加予定:
-            // `https://manager.${domainName}`, など
-          ],
-          allowedHeaders: ["*"],
-          maxAge: 3000,
-        },
-      ],
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       removalPolicy: cdk.RemovalPolicy.RETAIN,
       autoDeleteObjects: false,
     });
@@ -77,6 +63,7 @@ export class WebsiteStack extends cdk.Stack {
     // CloudFront Origin Access Identity
     const oai = new cloudfront.OriginAccessIdentity(this, "OAI");
     websiteBucket.grantRead(oai);
+    galleryBucket.grantRead(oai);
 
     // CloudFront Function for URL rewriting
     const urlRewriteFunction = new cloudfront.Function(
@@ -171,7 +158,9 @@ export class WebsiteStack extends cdk.Stack {
       "GalleryDistribution",
       {
         defaultBehavior: {
-          origin: new origins.S3Origin(galleryBucket),
+          origin: new origins.S3Origin(galleryBucket, {
+            originAccessIdentity: oai,
+          }),
           viewerProtocolPolicy:
             cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
           allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
