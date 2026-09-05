@@ -19,6 +19,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
+import { requireAwsEnv } from "./aws-env";
+
 import { originalKey } from "../packages/gallery-schema/src/urls";
 import type { ManifestEntry } from "./migrate-gallery";
 
@@ -27,6 +29,7 @@ const MANIFEST = path.join(ROOT, "scripts/migration-manifest.json");
 const BUCKET = process.env.ORIGINALS_BUCKET || "jimixer-com-originals";
 const ORIGINALS_DIR =
   process.env.GALLERY_ORIGINALS_DIR || "/mnt/d/Users/jimixer/Pictures/VRChat";
+
 
 const s3 = new S3Client({ region: process.env.AWS_REGION || "ap-northeast-1" });
 
@@ -38,6 +41,8 @@ async function alreadyStored(key: string): Promise<boolean> {
 }
 
 async function main(): Promise<void> {
+  requireAwsEnv();
+
   const dryRun = process.argv.includes("--dry-run");
   const manifest: ManifestEntry[] = JSON.parse(await fs.readFile(MANIFEST, "utf-8"));
 

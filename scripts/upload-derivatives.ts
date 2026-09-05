@@ -20,6 +20,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
+import { requireAwsEnv } from "./aws-env";
+
 import { loadGallery } from "../packages/gallery-schema/src/content";
 import { ALL_DERIVATIVES } from "../packages/gallery-schema/src/images";
 import { photoIdFromOriginalKey, photoKey } from "../packages/gallery-schema/src/urls";
@@ -56,6 +58,8 @@ async function storedOriginals(): Promise<Set<string>> {
 }
 
 async function main(): Promise<void> {
+  requireAwsEnv();
+
   const dryRun = process.argv.includes("--dry-run");
   const index = await loadGallery(CONTENT_DIR);
   const photos = index.variants.flatMap((v) => v.photos);
