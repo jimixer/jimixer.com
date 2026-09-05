@@ -141,7 +141,7 @@ index は**ビルド時にディレクトリを走査して組み立てる**。�
 
 `sortImages` の廃止に伴い、`gallery-manager` のそのテストも削除される。
 
-移行前の公開オブジェクト 42 件の削除は、website の切り替えが本番に出てから行う。
+移行前の公開オブジェクト 42 件は本番反映後に削除済み（`npm run gallery:prune-legacy`）。
 manifest の `legacyKey` がその一覧を持っている。
 
 ## 7. やらないと決めたこと
