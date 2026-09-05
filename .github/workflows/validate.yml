@@ -1,0 +1,39 @@
+name: Validate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# AWS には触れない。S3 との突き合わせは読み取り権限が要るため
+# ローカルの `npm run gallery:check` に置いている。
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate gallery content
+        run: npm run gallery:validate
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build all workspaces
+        run: npm run test:ci

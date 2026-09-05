@@ -19,6 +19,7 @@ direnv exec . aws s3 ls s3://gallery.jimixer.com/gallery/
 ```
 
 `.envrc` が無ければ `.envrc.example` をコピーして `direnv allow`。
+必要な IAM 権限と発行手順は [docs/aws-credentials.md](./docs/aws-credentials.md) にある。
 
 ## ワークスペース
 
@@ -45,6 +46,9 @@ direnv exec . aws s3 ls s3://gallery.jimixer.com/gallery/
 ## 確認
 
 ```bash
-npm test                              # gallery-schema と gallery-manager
-npm run build --workspace=website     # 静的書き出しまで通す
+npm test                                   # gallery-schema と gallery-manager
+npm run gallery:validate                   # コンテンツの検証（AWS 不要。CI でも走る）
+npm run build --workspace=website          # 静的書き出しまで通す
+
+direnv exec . npm run gallery:check        # sidecar ⇔ S3 の突き合わせ（AWS 読み取りが要る）
 ```

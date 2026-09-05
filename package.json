@@ -32,7 +32,9 @@
     "test": "npm run test --workspace=@jimixer/gallery-schema && npm run test --workspace=gallery-manager",
     "gallery:derivatives": "tsx scripts/generate-derivatives.ts",
     "gallery:upload-originals": "tsx scripts/upload-originals.ts",
-    "gallery:upload-derivatives": "tsx scripts/upload-derivatives.ts"
+    "gallery:upload-derivatives": "tsx scripts/upload-derivatives.ts",
+    "gallery:validate": "tsx scripts/validate-content.ts",
+    "gallery:check": "tsx scripts/check-consistency.ts"
   },
   "workspaces": [
     "packages/*",

@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate gallery content
+        run: npm run gallery:validate
+
       - name: Build website
         run: npm run build --workspace=website
 
