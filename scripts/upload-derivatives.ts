@@ -72,12 +72,21 @@ async function main(): Promise<void> {
   }
 
   let uploaded = 0;
+  let skipped = 0;
   let bytes = 0;
 
   for (const photo of photos) {
     for (const name of ALL_DERIVATIVES) {
       const key = photoKey(photo.id, name);
-      const body = await fs.readFile(path.join(OUT_DIR, key));
+      const body = await fs.readFile(path.join(OUT_DIR, key)).catch(() => null);
+
+      // gallery-manager 経由で追加された写真はローカルに生成物を持たない。
+      // 既に公開済みなので、ここで作り直す必要はない
+      if (!body) {
+        console.log(`skip   ${key}  (ローカルに生成物なし)`);
+        skipped++;
+        continue;
+      }
 
       console.log(`put    ${key}`);
       if (!dryRun) {
@@ -98,7 +107,9 @@ async function main(): Promise<void> {
   }
 
   console.log(
-    `\n公開 ${uploaded} 件 (${(bytes / 1024 / 1024).toFixed(1)} MB)${dryRun ? "（dry-run）" : ""}`
+    `\n公開 ${uploaded} 件 (${(bytes / 1024 / 1024).toFixed(1)} MB) / スキップ ${skipped} 件${
+      dryRun ? "（dry-run）" : ""
+    }`
   );
 }
 
