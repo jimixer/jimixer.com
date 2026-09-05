@@ -21,7 +21,7 @@
 * **CI/CD:** GitHub Actions (実装済み)
 * **Content Source:**
   * Notes: note.com RSS (`https://note.com/jimixer/rss`) - Build時に静的生成
-  * Gallery: ローカル JSON ファイル (`src/lib/gallery-loader.ts`)
+  * Gallery: 画像別 sidecar をビルド時に読む (`src/lib/gallery.ts`)
   * Stack: 静的コンテンツ
 
 ## **3\. Architecture & Data Flow**
@@ -71,15 +71,17 @@
 
 ### **B. Gallery (VRChat Works)**
 
-**実装:** `website/src/app/gallery/page.tsx` + `website/src/lib/gallery-loader.ts`
+**実装:** `website/src/app/gallery/page.tsx` + `website/src/lib/gallery.ts`
 
-* ローカル JSON ファイルで管理（`content/gallery/gallery.json`）
-* 各項目：画像、アバター名、スクリーンショット一覧
-* UI: ギャラリー形式、詳細ページで複数画像を表示
-* **将来計画:** `gallery-manager` workspace による管理ツール実装予定
-  * 画像アップロード（D&D）+ WebP変換
-  * アバター単位での管理
-  * gallery.jimixer.com からの配信とJSON API提供
+* メタデータは**画像別 sidecar**（`content/gallery/{variant}/*.yml`）で管理し、git を真実とする。
+  index はビルド時にディレクトリを走査して組み立てる生成物
+* 構造は アバター（販売物）→ バリアント（調整した素体）→ 写真 の 3 階層
+* UI: トップはアバター単位で見出しを挟んだバリアントの一覧、
+  バリアントページは撮影日の降順で月ごとに区切る
+* 原本は非公開バケットに保管し、その保管が公開の事前条件になる
+* 管理ツールは `gallery-manager` workspace（ローカル専用）
+
+設計上の決定は [gallery-architecture.md](./gallery-architecture.md) と [adr/](./adr/) にある。
 
 ### **C. Reusable Components**
 

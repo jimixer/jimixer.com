@@ -44,13 +44,14 @@ jimixer.com/
 │   │   │       └── Header.tsx
 │   │   ├── lib/            # Utility functions
 │   │   │   ├── rss-parser.ts      # note RSS fetcher
-│   │   │   └── gallery-loader.ts  # Gallery JSON loader
+│   │   │   └── gallery.ts         # sidecar からビルド時に index を組み立てる
 │   │   └── types/          # TypeScript type definitions
-│   │       ├── note.ts
-│   │       └── gallery.ts
-│   ├── content/            # Local content
-│   │   └── gallery/
-│   │       └── gallery.json # VRChat avatars metadata
+│   │       └── note.ts
+│   ├── content/            # Local content（メタデータの真実）
+│   │   ├── avatars/        # アバターの作者クレジットと入手元
+│   │   └── gallery/{variant}/
+│   │       ├── _variant.yml           # 所属アバター・表示名・カバー
+│   │       └── {撮影日時}-{photoId}.yml  # 写真 1 枚 = 1 ファイル
 │   ├── public/
 │   ├── next.config.mjs     # Static export + trailing slash
 │   └── package.json
@@ -234,22 +235,17 @@ cd website && npm run dev
 
 ### ギャラリー画像の追加
 
-1. 画像を `website/public/gallery/` に配置
-2. `website/content/gallery/gallery.json` に情報を追加:
+gallery-manager から行う。手で JSON を書く運用は廃止した。
 
-```json
-{
-  "id": "avatar-id",
-  "image": "/gallery/thumbnail.jpg",
-  "images": [
-    { "url": "/gallery/photo-01.jpg" },
-    { "url": "/gallery/photo-02.jpg" }
-  ],
-  "avatarName": "アバター名"
-}
+```bash
+direnv exec . npm run dev:gallery   # http://localhost:3001
 ```
 
-3. ビルド & デプロイ
+ドラッグ&ドロップすると、原本の保管 → 派生物の生成と公開 → sidecar の書き込み、の順で
+処理される。**アップロードしただけでは公開されない**（メタデータの真実は git なので、
+sidecar を commit / push してデプロイが走る必要がある）。
+
+手順と裏側の詳細は [docs/image-management.md](docs/image-management.md) を参照。
 
 ### Notes (note RSS) の更新
 
