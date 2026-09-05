@@ -8,8 +8,8 @@ import {
   newPhotoId,
   sidecarBasename,
   writePhoto,
-} from "../content.js";
-import { PHOTO_ID_PATTERN } from "../schema.js";
+} from "../content";
+import { PHOTO_ID_PATTERN } from "../schema";
 
 let dir: string;
 

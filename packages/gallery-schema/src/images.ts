@@ -1,6 +1,6 @@
 import sharp from "sharp";
 
-import { DERIVATIVE_LONG_EDGE, OG_SIZE, type DerivativeName } from "./urls.js";
+import { DERIVATIVE_LONG_EDGE, OG_SIZE, type DerivativeName } from "./urls";
 
 /**
  * 原本から派生物を作る。Node 専用。

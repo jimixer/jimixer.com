@@ -1,4 +1,4 @@
-import type { Avatar, GalleryIndex, Photo, Variant } from "./types.js";
+import type { Avatar, GalleryIndex, Photo, Variant } from "./types";
 
 /**
  * 表示の並びとグルーピング。データの構造とは独立しており、

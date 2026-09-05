@@ -122,10 +122,16 @@ index は**ビルド時にディレクトリを走査して組み立てる**。�
    - 既存3件は「アバター1 = バリアント1」として移行する。バリアント名は現状のまま（`milltina` 等）を維持し、URL を変えない。
 4. **派生物の生成**。`convertToWebP` を 640 / 1080 / 2048 / og の生成に拡張し、既存分をバックフィルする。
 5. **website の書き換え**。sidecar からの読み込み、月別区切り、素の `<img>` + srcset、`generateMetadata`、sitemap。
-6. **CI の検証**。スキーマ検証、sidecar ⇔ 派生物の双方向チェック、原本 ⊇ sidecar の片方向チェック。
-7. **インフラの整理**。gallery バケットを OAI/OAC 経由に閉じる。使われていない CORS 設定（`localhost:3001` への PUT/POST 許可。実際の経路はサーバー側 SDK なのでブラウザは S3 と直接通信しない）を削除する。
+6. **gallery-manager の書き換え**。旧構造のまま `gallery.json` を読み書きしており、
+   website の切り替えと同時に機能しなくなる。sidecar の読み書き、原本の退避、
+   派生物の生成とアップロードへ差し替える。`sortImages` はここで廃止される。
+7. **CI の検証**。スキーマ検証、sidecar ⇔ 派生物の双方向チェック、原本 ⊇ sidecar の片方向チェック。
+8. **インフラの整理**。gallery バケットを OAI/OAC 経由に閉じる。使われていない CORS 設定（`localhost:3001` への PUT/POST 許可。実際の経路はサーバー側 SDK なのでブラウザは S3 と直接通信しない）を削除する。
 
 `sortImages` の廃止に伴い、`gallery-manager` のそのテストも削除される。
+
+移行前の公開オブジェクト 42 件の削除は、website の切り替えが本番に出てから行う。
+manifest の `legacyKey` がその一覧を持っている。
 
 ## 7. やらないと決めたこと
 

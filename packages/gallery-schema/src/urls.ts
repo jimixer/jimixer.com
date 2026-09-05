@@ -1,4 +1,4 @@
-import type { Photo } from "./types.js";
+import type { Photo } from "./types";
 
 /**
  * 写真の identity は `photoId` であり、URL とストレージキーはそこから導出される。

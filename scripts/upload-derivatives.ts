@@ -20,9 +20,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
-import { loadGallery } from "../packages/gallery-schema/src/content.js";
-import { STANDARD_DERIVATIVES } from "../packages/gallery-schema/src/images.js";
-import { originalKey, photoKey, type DerivativeName } from "../packages/gallery-schema/src/urls.js";
+import { loadGallery } from "../packages/gallery-schema/src/content";
+import { STANDARD_DERIVATIVES } from "../packages/gallery-schema/src/images";
+import { originalKey, photoKey, type DerivativeName } from "../packages/gallery-schema/src/urls";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CONTENT_DIR = path.join(ROOT, "website/content");

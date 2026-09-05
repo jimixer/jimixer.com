@@ -1,26 +1,46 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import Image from "next/image";
-import { buildImageUrl } from "@/lib/image-url";
-import type { GalleryImage } from "@/types/gallery";
+import type { MonthSection, Photo } from "@jimixer/gallery-schema";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import PhotoImage from "./PhotoImage";
 
 interface GalleryGridProps {
-  images: GalleryImage[];
-  avatarName: string;
+  /** 撮影日の降順。月が 1 つしかない場合も区切りを出す。 */
+  sections: MonthSection[];
+  variantName: string;
+  baseUrl: string;
 }
 
-export default function GalleryGrid({ images, avatarName }: GalleryGridProps) {
+/** ファーストビューに入る枚数。ここだけ `priority` にする。 */
+const EAGER_COUNT = 6;
+
+function monthLabel(month: string): string {
+  const [year, m] = month.split("-");
+  return `${year}年${Number(m)}月`;
+}
+
+function altOf(photo: Photo, variantName: string, position: number): string {
+  return photo.caption ?? `${variantName} - ${position}`;
+}
+
+export default function GalleryGrid({
+  sections,
+  variantName,
+  baseUrl,
+}: GalleryGridProps) {
+  // ライトボックスは月をまたいで送るため、区切りとは別に通し順を持つ
+  const photos = useMemo(() => sections.flatMap((s) => s.photos), [sections]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const close = useCallback(() => setSelectedIndex(null), []);
   const prev = useCallback(
-    () => setSelectedIndex((i) => (i !== null ? (i - 1 + images.length) % images.length : null)),
-    [images.length]
+    () => setSelectedIndex((i) => (i !== null ? (i - 1 + photos.length) % photos.length : null)),
+    [photos.length]
   );
   const next = useCallback(
-    () => setSelectedIndex((i) => (i !== null ? (i + 1) % images.length : null)),
-    [images.length]
+    () => setSelectedIndex((i) => (i !== null ? (i + 1) % photos.length : null)),
+    [photos.length]
   );
 
   useEffect(() => {
@@ -34,25 +54,44 @@ export default function GalleryGrid({ images, avatarName }: GalleryGridProps) {
     return () => window.removeEventListener("keydown", handler);
   }, [selectedIndex, close, prev, next]);
 
+  let position = 0;
+
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
-        {images.map((image, index) => (
-          <button
-            key={index}
-            className="relative aspect-square overflow-hidden w-full"
-            onClick={() => setSelectedIndex(index)}
-          >
-            <Image
-              fill
-              src={buildImageUrl(image.url)}
-              alt={`${avatarName} - ${index + 1}`}
-              sizes="(max-width: 768px) 50vw, 33vw"
-              className="object-cover transition-transform duration-300 hover:scale-105"
-            />
-          </button>
-        ))}
-      </div>
+      {sections.map((section) => (
+        <section key={section.month} className="mb-10 last:mb-0">
+          <h2 className="mb-2 text-xs font-mono uppercase tracking-[0.3em] text-white/40">
+            {monthLabel(section.month)}
+            <span className="ml-3 normal-case tracking-normal text-white/25">
+              {section.photos.length}
+            </span>
+          </h2>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
+            {section.photos.map((photo) => {
+              const index = position++;
+              return (
+                <button
+                  key={photo.id}
+                  className="relative aspect-square overflow-hidden w-full"
+                  onClick={() => setSelectedIndex(index)}
+                >
+                  <PhotoImage
+                    photo={photo}
+                    baseUrl={baseUrl}
+                    candidates={["thumb", "card"]}
+                    fallback="thumb"
+                    sizes="(max-width: 768px) 50vw, 320px"
+                    alt={altOf(photo, variantName, index + 1)}
+                    priority={index < EAGER_COUNT}
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      ))}
 
       {selectedIndex !== null && (
         <div
@@ -62,27 +101,36 @@ export default function GalleryGrid({ images, avatarName }: GalleryGridProps) {
           {/* 前へ */}
           <button
             className="absolute left-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors p-4 text-4xl leading-none"
-            onClick={(e) => { e.stopPropagation(); prev(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              prev();
+            }}
             aria-label="前の画像"
           >
             ‹
           </button>
 
-          {/* メイン画像 */}
-          <Image
-            src={buildImageUrl(images[selectedIndex].url)}
-            alt={`${avatarName} - ${selectedIndex + 1}`}
-            width={0}
-            height={0}
-            sizes="90vw"
-            style={{ width: 'auto', height: 'auto', maxHeight: '90vh', maxWidth: '90vw' }}
-            onClick={(e) => e.stopPropagation()}
-          />
+          {/* 画像自体のクリックでは閉じない */}
+          <div onClick={(e) => e.stopPropagation()}>
+            <PhotoImage
+              photo={photos[selectedIndex]}
+              baseUrl={baseUrl}
+              candidates={["card", "full"]}
+              fallback="full"
+              sizes="90vw"
+              alt={altOf(photos[selectedIndex], variantName, selectedIndex + 1)}
+              priority
+              className="max-h-[90vh] max-w-[90vw] w-auto h-auto"
+            />
+          </div>
 
           {/* 次へ */}
           <button
             className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors p-4 text-4xl leading-none"
-            onClick={(e) => { e.stopPropagation(); next(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              next();
+            }}
             aria-label="次の画像"
           >
             ›
@@ -90,7 +138,7 @@ export default function GalleryGrid({ images, avatarName }: GalleryGridProps) {
 
           {/* カウンター */}
           <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/50 text-sm font-mono">
-            {selectedIndex + 1} / {images.length}
+            {selectedIndex + 1} / {photos.length}
           </span>
 
           {/* 閉じる */}

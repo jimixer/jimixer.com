@@ -10,8 +10,8 @@ import {
   variantFileSchema,
   PHOTO_ID_PATTERN,
   SLUG_PATTERN,
-} from "./schema.js";
-import type { Avatar, GalleryIndex, Photo, Variant } from "./types.js";
+} from "./schema";
+import type { Avatar, GalleryIndex, Photo, Variant } from "./types";
 
 /**
  * `website/content/` 以下の sidecar 群を読み書きする。Node 専用。

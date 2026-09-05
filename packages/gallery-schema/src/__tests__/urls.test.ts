@@ -5,7 +5,7 @@ import {
   photoKey,
   photoSrcSet,
   photoUrl,
-} from "../urls.js";
+} from "../urls";
 
 const BASE = "https://gallery.example.com";
 const portrait = { id: "abc1234567", width: 1080, height: 1920 };

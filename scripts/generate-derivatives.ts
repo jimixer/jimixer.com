@@ -15,13 +15,13 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { loadGallery } from "../packages/gallery-schema/src/content.js";
+import { loadGallery } from "../packages/gallery-schema/src/content";
 import {
   renderDerivative,
   STANDARD_DERIVATIVES,
-} from "../packages/gallery-schema/src/images.js";
-import { photoKey, type DerivativeName } from "../packages/gallery-schema/src/urls.js";
-import type { ManifestEntry } from "./migrate-gallery.js";
+} from "../packages/gallery-schema/src/images";
+import { photoKey, type DerivativeName } from "../packages/gallery-schema/src/urls";
+import type { ManifestEntry } from "./migrate-gallery";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CONTENT_DIR = path.join(ROOT, "website/content");

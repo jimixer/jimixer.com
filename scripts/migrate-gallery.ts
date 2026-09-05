@@ -20,8 +20,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { stringify as stringifyYaml } from "yaml";
 
-import { newPhotoId, sidecarBasename } from "../packages/gallery-schema/src/content.js";
-import { measureOriginal } from "../packages/gallery-schema/src/images.js";
+import { newPhotoId, sidecarBasename } from "../packages/gallery-schema/src/content";
+import { measureOriginal } from "../packages/gallery-schema/src/images";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CONTENT_DIR = path.join(ROOT, "website/content");

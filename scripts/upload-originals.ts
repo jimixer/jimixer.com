@@ -19,8 +19,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
-import { originalKey } from "../packages/gallery-schema/src/urls.js";
-import type { ManifestEntry } from "./migrate-gallery.js";
+import { originalKey } from "../packages/gallery-schema/src/urls";
+import type { ManifestEntry } from "./migrate-gallery";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const MANIFEST = path.join(ROOT, "scripts/migration-manifest.json");

@@ -7,9 +7,18 @@
   "author": "jimixer",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./content": "./src/content.ts",
-    "./images": "./src/images.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./content": {
+      "types": "./src/content.ts",
+      "default": "./src/content.ts"
+    },
+    "./images": {
+      "types": "./src/images.ts",
+      "default": "./src/images.ts"
+    }
   },
   "scripts": {
     "test": "vitest run",
@@ -24,5 +33,6 @@
   "devDependencies": {
     "typescript": "^5.3.3",
     "vitest": "^4.1.2"
-  }
+  },
+  "types": "./src/index.ts"
 }

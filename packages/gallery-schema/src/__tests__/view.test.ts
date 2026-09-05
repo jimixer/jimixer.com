@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Avatar, GalleryIndex, Photo, Variant } from "../types.js";
-import { avatarGroups, monthSections } from "../view.js";
+import type { Avatar, GalleryIndex, Photo, Variant } from "../types";
+import { avatarGroups, monthSections } from "../view";
 
 function photo(id: string, capturedAt: string, variantId = "v"): Photo {
   return { id, variantId, capturedAt, width: 1080, height: 1920 };
