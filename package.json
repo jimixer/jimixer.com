@@ -28,9 +28,11 @@
     "cdk": "npm run cdk --workspace=infrastructure",
     "deploy:infra": "npm run deploy --workspace=infrastructure",
     "deploy:site": "npm run deploy:site --workspace=infrastructure",
-    "test:ci": "npm run build --workspace=website && npm run build --workspace=gallery-manager && npm run build --workspace=infrastructure"
+    "test:ci": "npm run build --workspace=website && npm run build --workspace=gallery-manager && npm run build --workspace=infrastructure",
+    "test": "npm run test --workspace=@jimixer/gallery-schema && npm run test --workspace=gallery-manager"
   },
   "workspaces": [
+    "packages/*",
     "website",
     "infrastructure",
     "gallery-manager"
