@@ -6,7 +6,7 @@
 | 経路 | 資格情報 | 用途 |
 |---|---|---|
 | ローカル | `.envrc` の `AWS_PROFILE=jimixer` | gallery-manager、`scripts/` の一括処理、CDK デプロイ |
-| GitHub Actions | リポジトリの Secrets | `deploy.yml`（サイトの同期と CloudFront の無効化） |
+| GitHub Actions | OIDC で引き受ける IAM ロール（**鍵を置かない**） | `deploy.yml` / `daily-rebuild.yml`（サイトの同期と CloudFront の無効化） |
 
 ## なぜ分けるか
 
@@ -14,6 +14,11 @@
 逆にローカルの操作は原本を扱う。CI に原本バケットへの権限を渡す理由が無いので渡さない。
 
 ## ローカル（プロファイル `jimixer`）
+
+> **現状はまだこの姿になっていない。** プロファイル `jimixer` の IAM ユーザーは
+> `Administrator` グループに属していて `AdministratorAccess` を持つ。下のポリシーは
+> 到達したい姿であって、いまの権限ではない。つまり `direnv exec .` を通した全コマンドが
+> 管理者として走る。分離は未着手（GitHub Actions 側は完了済み）。
 
 ### 必要な権限
 
@@ -106,49 +111,62 @@ direnv exec . npm run gallery:check          # 3 項目すべて ✓ になる�
 
 ## GitHub Actions
 
-`deploy.yml` が使う Secrets は 3 つ。
+**恒久的なアクセスキーは置かない。** ワークフローは OIDC で IAM ロール
+`jimixer-com-github-actions` を引き受け、そのジョブ 1 回分の資格情報だけを得る。
+
+CI が走らせるのは `npm ci` と Next.js のビルドで、サードパーティのコードが同じ
+プロセスに入る。資格情報がそこに置かれている限り、侵害の経路はリポジトリではなく
+依存ツリー全体になる。鍵が存在しなければ、鍵のローテーションという運用も消える。
+
+### Secrets
 
 | Secret | 用途 |
 |---|---|
-| `AWS_ACCESS_KEY_ID` | |
-| `AWS_SECRET_ACCESS_KEY` | |
+| `AWS_DEPLOY_ROLE_ARN` | 引き受けるロールの ARN。`npm run deploy:infra` の出力 `GitHubActionsDeployRoleDeployRoleArn` |
 | `AWS_REGION` | `ap-northeast-1` |
 
-### 必要な権限
+ARN を直書きせず Secret に置いているのは、アカウント ID をリポジトリに残さないため。
 
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "ReadStackOutputs",
-      "Effect": "Allow",
-      "Action": ["cloudformation:DescribeStacks"],
-      "Resource": "arn:aws:cloudformation:ap-northeast-1:${AWS_ACCOUNT_ID}:stack/JimixerComStack/*"
-    },
-    {
-      "Sid": "SyncWebsite",
-      "Effect": "Allow",
-      "Action": ["s3:ListBucket", "s3:PutObject", "s3:DeleteObject"],
-      "Resource": [
-        "arn:aws:s3:::jimixer.com-website",
-        "arn:aws:s3:::jimixer.com-website/*"
-      ]
-    },
-    {
-      "Sid": "InvalidateCache",
-      "Effect": "Allow",
-      "Action": ["cloudfront:CreateInvalidation"],
-      "Resource": "*"
-    }
-  ]
-}
-```
+### 誰が引き受けられるか
 
-`s3:DeleteObject` が要るのは `aws s3 sync --delete` を使っているため。
+信頼条件は `repo:jimixer/jimixer.com:ref:refs/heads/main` に固定している。
+**`sub` を絞らないと、同じプロバイダを使う任意のリポジトリから引き受けられる**。
+main 以外のブランチから `workflow_dispatch` しても AssumeRole は失敗する。意図した挙動。
+
+### 権限
+
+ロールの定義は [infrastructure/lib/github-actions-deploy-role.ts](../infrastructure/lib/github-actions-deploy-role.ts)
+にある。コードが真実なのでここに JSON は写さない。範囲だけ記す。
+
+- `cloudformation:DescribeStacks` — このスタックのみ。バケット名と Distribution ID を出力から引く
+- website バケットの `s3:ListBucket` / `s3:PutObject` / `s3:DeleteObject` — `aws s3 sync --delete`
+  が呼ぶ 3 つ。同期の向き上いらない `s3:GetObject` は与えていない
+- メインディストリビューションの `cloudfront:CreateInvalidation`
+
 ギャラリーのバケットと原本バケットは**この経路からは触らせない**。
 
+### OIDC プロバイダ（アカウントに一度だけ）
+
+プロバイダはアカウント共有の資源であり、このスタックの持ち物ではない（同じアカウントに
+他のプロジェクトが同居している）。CDK からは参照するだけなので、無ければ先に作る。
+
+```bash
+direnv exec . aws iam create-open-id-connect-provider \
+  --url https://token.actions.githubusercontent.com \
+  --client-id-list sts.amazonaws.com \
+  --thumbprint-list 6938fd4d98bab03faadb97b34396831e3780aea1
+```
+
+### 詰まったとき
+
+| 症状 | 原因 |
+|---|---|
+| `Not authorized to perform sts:AssumeRoleWithWebIdentity` | main 以外で走っている。または `permissions: id-token: write` が無い |
+| `roleSessionName failed to satisfy constraint` | セッション名に使えるのは `[\w+=,.@-]` のみ。`github.workflow` はワークフロー名（空白を含む）に展開されるので使えない |
+
 ## 漏洩したとき
+
+対象はローカルのアクセスキーだけ。GitHub Actions には鍵が無い。
 
 ```bash
 aws iam list-access-keys --user-name <user>

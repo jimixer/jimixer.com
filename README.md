@@ -209,15 +209,16 @@ aws cloudfront create-invalidation \
   --paths "/*"
 ```
 
-### 5. GitHub Secrets の設定
+### 5. GitHub Actions の資格情報
 
-リポジトリに以下の Secrets を追加:
+GitHub Actions は OIDC で IAM ロールを引き受ける。**アクセスキーは置かない**。
+必要な Secrets は 2 つ:
 
-- `AWS_ACCESS_KEY_ID`: IAM ユーザーのアクセスキー ID
-- `AWS_SECRET_ACCESS_KEY`: IAM ユーザーのシークレットアクセスキー
+- `AWS_DEPLOY_ROLE_ARN`: `npm run deploy:infra` の出力 `GitHubActionsDeployRoleDeployRoleArn` の値
 - `AWS_REGION`: `ap-northeast-1`
-- `AWS_ACCOUNT_ID`: あなたの AWS アカウント ID
-- `CERTIFICATE_ARN`: ACM 証明書の ARN
+
+ロールは CDK が作るが、OIDC プロバイダはアカウントに一度だけ手で作る必要がある。
+手順と信頼条件は [docs/aws-credentials.md](./docs/aws-credentials.md) にある。
 
 **Note:** GitHub Actions は CDK Stack の Outputs から Distribution ID を自動取得するため、`CLOUDFRONT_DISTRIBUTION_ID` の設定は不要です。
 
