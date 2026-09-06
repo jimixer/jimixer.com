@@ -17,11 +17,11 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 import { requireAwsEnv } from "./aws-env";
 
-import { originalKey } from "../packages/gallery-schema/src/urls";
+import { originalKey, originalPrefix } from "../packages/gallery-schema/src/urls";
 import type { ManifestEntry } from "./migrate-gallery";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -33,11 +33,26 @@ const ORIGINALS_DIR =
 
 const s3 = new S3Client({ region: process.env.AWS_REGION || "ap-northeast-1" });
 
-async function alreadyStored(key: string): Promise<boolean> {
-  return s3
-    .send(new HeadObjectCommand({ Bucket: BUCKET, Key: key }))
-    .then(() => true)
-    .catch(() => false);
+/**
+ * 保管済みかを確かめる。
+ *
+ * HeadObject は `s3:GetObject` を要求するが、原本の読み出し権限は日常の資格情報に
+ * 持たせない（docs/aws-credentials.md）。権限が無いと 403 が返り、それを「未保管」と
+ * 読むと**全件を上書きしてしまう** — 原本は不変という契約（docs/adr/0003）が
+ * バージョニング頼みで破れる。`ListObjectsV2` なら `s3:ListBucket` だけで済む。
+ *
+ * 例外は握り潰さない。判定できないまま進むより止まったほうがいい。
+ * 拡張子は原本に従うため前方一致で見る（gallery-manager の hasOriginal と同じ）。
+ */
+async function alreadyStored(photoId: string): Promise<boolean> {
+  const found = await s3.send(
+    new ListObjectsV2Command({
+      Bucket: BUCKET,
+      Prefix: originalPrefix(photoId),
+      MaxKeys: 1,
+    })
+  );
+  return (found.KeyCount ?? 0) > 0;
 }
 
 async function main(): Promise<void> {
@@ -55,7 +70,7 @@ async function main(): Promise<void> {
     const file = path.join(ORIGINALS_DIR, entry.original);
     const { size } = await fs.stat(file);
 
-    if (await alreadyStored(key)) {
+    if (await alreadyStored(entry.photoId)) {
       console.log(`skip   ${key}  (既に保管済み)`);
       kept++;
       continue;
