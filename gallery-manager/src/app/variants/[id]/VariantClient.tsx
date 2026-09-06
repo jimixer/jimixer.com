@@ -2,6 +2,7 @@
 
 import type { Avatar, Variant } from "@jimixer/gallery-schema";
 import { galleryBaseUrl, monthSections, photoUrl } from "@jimixer/gallery-schema";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -59,21 +60,29 @@ export function VariantClient({ variant, avatar }: VariantClientProps) {
             <code className="font-mono">/gallery/{variant.id}/</code>
           </p>
         </div>
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => {
-            if (!window.confirm(`${variant.displayName} を写真ごと削除します。原本は残ります。`)) {
-              return;
-            }
-            call(`/api/variants/${variant.id}`, { method: "DELETE" }).then(() =>
-              router.push("/")
-            );
-          }}
-          className="text-sm text-red-600 hover:text-red-700 dark:text-red-400"
-        >
-          バリアントを削除
-        </button>
+        <div className="flex items-center gap-4">
+          <Link
+            href={`/variants/${variant.id}/edit`}
+            className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400"
+          >
+            編集
+          </Link>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              if (!window.confirm(`${variant.displayName} を写真ごと削除します。原本は残ります。`)) {
+                return;
+              }
+              call(`/api/variants/${variant.id}`, { method: "DELETE" }).then(() =>
+                router.push("/")
+              );
+            }}
+            className="text-sm text-red-600 hover:text-red-700 dark:text-red-400"
+          >
+            バリアントを削除
+          </button>
+        </div>
       </div>
 
       {error && (
