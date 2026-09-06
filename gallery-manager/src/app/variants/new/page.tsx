@@ -1,5 +1,6 @@
 import { NewVariantClient } from "./NewVariantClient";
 
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { readGallery } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +10,7 @@ export default async function NewVariantPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumbs items={[{ label: "バリアントを作成" }]} />
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
         バリアントを作成
       </h2>

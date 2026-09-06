@@ -26,7 +26,7 @@ export default async function GalleryPage() {
             >
               {/* アバターの見出し。バリアントが 1 つでも常に出す */}
               <div className="flex items-center px-4 py-2 bg-neutral-950 border-b border-white/10 md:h-full md:w-10 md:justify-center md:border-b-0 md:border-r md:py-0">
-                <h2 className="text-xs font-mono uppercase tracking-[0.3em] text-white/40 md:[writing-mode:vertical-rl] md:rotate-180">
+                <h2 className="text-xs font-mono uppercase tracking-[0.3em] text-white/40 md:[writing-mode:vertical-rl]">
                   {avatar.displayName}
                 </h2>
               </div>
@@ -61,13 +61,18 @@ export default async function GalleryPage() {
                       </div>
                     </div>
 
-                    {/* バリアント名（デスクトップ・右下・縦書き） */}
+                    {/*
+                      バリアント名（デスクトップ・右下・縦書き）。
+
+                      回転は掛けない。vertical-rl は日本語を正立のまま上から下へ組むので、
+                      180 度回すと上下が逆さまになる。ラテン文字は時計回りに寝るが、
+                      どちらの表記でも上から下へ読む向きで揃う。
+                    */}
                     <div className="hidden md:block absolute bottom-6 right-3">
                       <p
                         className="text-4xl font-mono font-bold text-white whitespace-nowrap"
                         style={{
                           writingMode: "vertical-rl",
-                          transform: "rotate(180deg)",
                           textShadow: "0 2px 8px rgba(0,0,0,1)",
                         }}
                       >

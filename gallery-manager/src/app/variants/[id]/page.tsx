@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { VariantClient } from "./VariantClient";
 
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { readGallery } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
@@ -13,9 +14,12 @@ export default async function VariantPage({ params }: { params: { id: string } }
   if (!variant) notFound();
 
   return (
-    <VariantClient
-      variant={variant}
-      avatar={avatars.find((a) => a.id === variant.avatarId)}
-    />
+    <div className="space-y-6">
+      <Breadcrumbs items={[{ label: variant.displayName }]} />
+      <VariantClient
+        variant={variant}
+        avatar={avatars.find((a) => a.id === variant.avatarId)}
+      />
+    </div>
   );
 }

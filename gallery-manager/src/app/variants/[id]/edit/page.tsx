@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { VariantForm } from "@/components/VariantForm";
 import { readGallery } from "@/lib/content";
 
@@ -13,6 +14,12 @@ export default async function EditVariantPage({ params }: { params: { id: string
 
   return (
     <div className="space-y-6">
+      <Breadcrumbs
+        items={[
+          { label: variant.displayName, href: `/variants/${variant.id}` },
+          { label: "編集" },
+        ]}
+      />
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
         {variant.displayName} を編集
       </h2>

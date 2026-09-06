@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,8 +18,11 @@ export default function RootLayout({
       <body className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <header className="bg-white dark:bg-gray-800 shadow">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            {/* どの画面からも一覧へ戻れるように、見出しをそのまま導線にする */}
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Gallery Manager
+              <Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                Gallery Manager
+              </Link>
             </h1>
           </div>
         </header>
