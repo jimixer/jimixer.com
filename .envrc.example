@@ -1,12 +1,17 @@
 # AWS Profile for jimixer.com project
 # Copy this file to .envrc and configure with your AWS credentials
 
-# Clear environment variable credentials (use profile instead)
+# Clear environment variable credentials (use the SSO profile instead)
 unset AWS_ACCESS_KEY_ID
 unset AWS_SECRET_ACCESS_KEY
 
-# AWS Profile (configure via `aws configure --profile jimixer`)
-export AWS_PROFILE=jimixer
+# AWS Profile: IAM Identity Center の権限セット JimixerComGalleryOps。
+# 恒久的なアクセスキーは使わない。`aws sso login --sso-session jimixer` でログインする。
+#
+# 外から与えられていればそれを尊重する。CDK デプロイのように広い権限が要るときは
+#   AWS_PROFILE=jimixer-admin direnv exec . npm run deploy:infra
+# のように前置きする。既定を狭いほうにしておくのが要点。
+export AWS_PROFILE=${AWS_PROFILE:-jimixer-gallery}
 
 # AWS Account and Region for CDK
 export AWS_ACCOUNT_ID=YOUR_AWS_ACCOUNT_ID
