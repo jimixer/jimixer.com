@@ -1,5 +1,6 @@
 import * as cdk from "aws-cdk-lib";
 import * as s3 from "aws-cdk-lib/aws-s3";
+import * as iam from "aws-cdk-lib/aws-iam";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as acm from "aws-cdk-lib/aws-certificatemanager";
@@ -62,6 +63,26 @@ export class WebsiteStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.RETAIN,
       autoDeleteObjects: false,
     });
+
+    // 原本の削除をバケットポリシーで拒否する。
+    //
+    // 「原本は不変」（docs/adr/0003）は、いまのところ削除のコードパスがどこにも
+    // 無いという弱い根拠で保たれている。Deny なら管理者の資格情報でも引っかかるので、
+    // 誤操作と自動化の事故を止められる。意図的に消す必要が出たときは、このポリシーを
+    // 外すという明示的な一手を踏むことになる。
+    //
+    // 権限を持つ攻撃者は同じ手順でこれを外せる。事故に対する保険であって、
+    // 敵対者に対する防御ではない。
+    originalsBucket.addToResourcePolicy(
+      new iam.PolicyStatement({
+        sid: "DenyOriginalDeletion",
+        effect: iam.Effect.DENY,
+        principals: [new iam.AnyPrincipal()],
+        // 削除マーカーを置く DeleteObject と、版を消し飛ばす DeleteObjectVersion の両方
+        actions: ["s3:DeleteObject", "s3:DeleteObjectVersion"],
+        resources: [originalsBucket.arnForObjects("*")],
+      })
+    );
 
     // CloudFront Origin Access Identity
     const oai = new cloudfront.OriginAccessIdentity(this, "OAI");
