@@ -23,11 +23,14 @@ direnv exec . aws s3 ls s3://gallery.jimixer.com/gallery/
 `Error loading SSO Token` が出たらセッション切れなので `aws sso login --sso-session jimixer`。
 
 **既定のプロファイルは意図的に狭い。** 原本の読み出しも削除も、CloudFormation も持たない。
-CDK デプロイのように広い権限が要るときだけ前置きする。
+広い権限が要るコマンドは、呼び出し側の環境ではなく**コマンド自身が `--profile` で宣言する**。
 
 ```bash
-AWS_PROFILE=jimixer-admin direnv exec . npm run deploy:infra
+direnv exec . npm run deploy:infra   # 中で --profile jimixer-admin を指定している
 ```
+
+`AWS_PROFILE=jimixer-admin direnv exec . ...` のような前置きは効かない。`direnv exec` は
+.envrc を読む前に direnv の状態を巻き戻すので、前置きした値も一緒に破棄される。
 
 権限が足りずに 403 が出たとき、**まず疑うのは権限であってコードではない**。
 どの API にどの権限が要るかは [docs/aws-credentials.md](./docs/aws-credentials.md) にある。

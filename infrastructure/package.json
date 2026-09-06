@@ -9,8 +9,8 @@
     "build": "tsc",
     "watch": "tsc -w",
     "cdk": "cdk",
-    "deploy": "cdk deploy --all",
-    "deploy:site": "npm run build --workspace=../website && aws s3 sync ../website/out/ s3://$(aws cloudformation describe-stacks --stack-name JimixerComStack --query 'Stacks[0].Outputs[?OutputKey==`BucketName`].OutputValue' --output text) --delete"
+    "deploy": "cdk deploy --all --profile ${AWS_ADMIN_PROFILE:-jimixer-admin}",
+    "deploy:site": "npm run build --workspace=../website && aws s3 sync ../website/out/ s3://$(aws cloudformation describe-stacks --stack-name JimixerComStack --query 'Stacks[0].Outputs[?OutputKey==`BucketName`].OutputValue' --output text --profile ${AWS_ADMIN_PROFILE:-jimixer-admin}) --delete --profile ${AWS_ADMIN_PROFILE:-jimixer-admin}"
   },
   "dependencies": {
     "aws-cdk-lib": "^2.120.0",
