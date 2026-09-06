@@ -1,16 +1,11 @@
 import type { OriginalExtension, Photo } from "@jimixer/gallery-schema";
-import {
-  ORIGINAL_EXTENSIONS,
-  originalKey,
-  originalPrefix,
-  photoKey,
-} from "@jimixer/gallery-schema";
+import { ORIGINAL_EXTENSIONS, originalKey, photoKey } from "@jimixer/gallery-schema";
 import { deletePhoto as removeSidecar, newPhotoId, writePhoto } from "@jimixer/gallery-schema/content";
 import { ALL_DERIVATIVES, measureOriginal, renderDerivative } from "@jimixer/gallery-schema/images";
 
 import { isValidCapturedAt } from "./captured-at";
 import { contentDir } from "./content";
-import { deleteDerivatives, hasOriginal, putDerivative, putOriginal } from "./s3";
+import { deleteDerivatives, putDerivative, putOriginal } from "./s3";
 
 const CONTENT_TYPES: Record<OriginalExtension, string> = {
   png: "image/png",
@@ -81,9 +76,4 @@ export async function addPhoto(input: AddPhotoInput): Promise<Photo> {
 export async function removePhoto(photo: Photo): Promise<void> {
   await removeSidecar(contentDir(), photo);
   await deleteDerivatives(ALL_DERIVATIVES.map((name) => photoKey(photo.id, name)));
-}
-
-/** 原本が揃っているかを確かめる。公開前の事前条件の検査に使う。 */
-export function originalIsStored(photoId: string): Promise<boolean> {
-  return hasOriginal(originalPrefix(photoId));
 }

@@ -61,8 +61,8 @@ direnv exec . ...` という前置きは効かない — `direnv exec` は .envr
 この権限で確かめているため、そこだけ 403 になって全体が止まる。実際にこの状態を踏んでいる。
 
 `HeadObject` を使わないのも同じ理由による。**`HeadObject` は `s3:GetObject` を要求する**ので、
-原本の保管判定は `ListObjectsV2` の前方一致で行う（`scripts/upload-originals.ts`、
-`gallery-manager/src/lib/s3.ts` の `hasOriginal`）。
+原本の保管判定は `ListObjectsV2` の前方一致で行う（`scripts/upload-originals.ts` の
+`alreadyStored`、`scripts/check-consistency.ts`）。
 
 ### 発行手順
 

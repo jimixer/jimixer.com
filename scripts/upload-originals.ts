@@ -42,7 +42,7 @@ const s3 = new S3Client({ region: process.env.AWS_REGION || "ap-northeast-1" });
  * バージョニング頼みで破れる。`ListObjectsV2` なら `s3:ListBucket` だけで済む。
  *
  * 例外は握り潰さない。判定できないまま進むより止まったほうがいい。
- * 拡張子は原本に従うため前方一致で見る（gallery-manager の hasOriginal と同じ）。
+ * 拡張子は原本に従うため前方一致で見る。
  */
 async function alreadyStored(photoId: string): Promise<boolean> {
   const found = await s3.send(
