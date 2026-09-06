@@ -1,9 +1,4 @@
-import {
-  DeleteObjectsCommand,
-  ListObjectsV2Command,
-  PutObjectCommand,
-  S3Client,
-} from "@aws-sdk/client-s3";
+import { DeleteObjectsCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 /**
  * S3 への書き込み。認証情報は AWS SDK の既定のチェーンに任せる
@@ -83,18 +78,4 @@ export async function deleteDerivatives(keys: string[]): Promise<void> {
       })
     )
   );
-}
-
-/** 原本が保管済みかを確かめる。拡張子は原本に従うため前方一致で見る。 */
-export async function hasOriginal(prefix: string): Promise<boolean> {
-  const found = await send(() =>
-    client.send(
-      new ListObjectsV2Command({
-        Bucket: ORIGINALS_BUCKET,
-        Prefix: prefix,
-        MaxKeys: 1,
-      })
-    )
-  );
-  return (found.KeyCount ?? 0) > 0;
 }
