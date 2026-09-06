@@ -14,6 +14,7 @@ new WebsiteStack(app, "JimixerComStack", {
   env,
   domainName: process.env.DOMAIN_NAME || "jimixer.com",
   certificateArn: process.env.CERTIFICATE_ARN!,
+  githubRepository: "jimixer/jimixer.com",
   description: "Static website hosting for jimixer.com",
 });
 

@@ -12,6 +12,8 @@ jobs:
 
     permissions:
       contents: read
+      # OIDC トークンの発行に要る。恒久的なアクセスキーを置かないための条件
+      id-token: write
 
     steps:
       - name: Checkout
@@ -33,10 +35,12 @@ jobs:
         run: npm run build --workspace=website
 
       - name: Configure AWS credentials
+        # OIDC でロールを引き受ける。発行されるのはこのジョブ1回分の資格情報で、
+        # 権限はサイトの配信に必要な範囲だけ（infrastructure/lib/github-actions-deploy-role.ts）
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          role-session-name: ${{ github.workflow }}-${{ github.run_id }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Deploy to S3
