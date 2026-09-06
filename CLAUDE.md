@@ -6,16 +6,23 @@ VRChat で撮影した写真を公開する個人サイト。静的サイト（`
 用語は [CONTEXT.md](./CONTEXT.md) に定義がある。「アバター」「バリアント」「原本」「派生物」は
 すべて意味が決まっているので、コードにもコメントにもこの語を使うこと。
 
-## AWS を触るときは direnv を通す
+## AWS を触るとき
 
-このリポジトリの AWS 操作は `.envrc`（git 管理外）が設定する `AWS_PROFILE=jimixer-gallery` を
-前提とする。シェルに direnv のフックが無い環境（エージェントのセッションを含む）では
-読み込まれず、`default` プロファイルに落ちて 403 になるか、意図しない資格情報で
-書き込むことになる。
+**npm script は自分でプロファイルを宣言する。** AWS を触るスクリプトは
+`AWS_PROFILE=${AWS_GALLERY_PROFILE:-jimixer-gallery}` を自分で前置きするので、
+direnv のフックが無い環境（エージェントのセッションを含む）でもそのまま動く。
 
 ```bash
-direnv exec . npm run gallery:upload-derivatives
-direnv exec . npm run dev:gallery
+npm run dev:gallery
+npm run gallery:upload-derivatives
+npm run gallery:check
+```
+
+**宣言を持たないのは、生の `aws` CLI と `npx tsx` の直呼び。** こちらは `.envrc` が
+読み込まれていないと `default` プロファイルに落ちて 403 になるか、意図しない資格情報で
+書き込むことになる。direnv を通すこと。
+
+```bash
 direnv exec . aws s3 ls s3://gallery.jimixer.com/gallery/
 ```
 
@@ -23,14 +30,17 @@ direnv exec . aws s3 ls s3://gallery.jimixer.com/gallery/
 `Error loading SSO Token` が出たらセッション切れなので `aws sso login --sso-session jimixer`。
 
 **既定のプロファイルは意図的に狭い。** 原本の読み出しも削除も、CloudFormation も持たない。
-広い権限が要るコマンドは、呼び出し側の環境ではなく**コマンド自身が `--profile` で宣言する**。
+広い権限が要るコマンドも、呼び出し側の環境ではなく**コマンド自身が宣言する**。
 
 ```bash
 direnv exec . npm run deploy:infra   # 中で --profile jimixer-admin を指定している
 ```
 
-`AWS_PROFILE=jimixer-admin direnv exec . ...` のような前置きは効かない。`direnv exec` は
-.envrc を読む前に direnv の状態を巻き戻すので、前置きした値も一緒に破棄される。
+`deploy:infra` に direnv が要るのはプロファイルのためではなく、CDK が `.envrc` の
+`AWS_ACCOUNT_ID` と `CERTIFICATE_ARN` を読むためである。
+
+プロファイルを差し替えたいときに `AWS_PROFILE=... npm run ...` と前置きしても効かない。
+スクリプトが上書きするので、`AWS_GALLERY_PROFILE` か `AWS_ADMIN_PROFILE` を使う。
 
 権限が足りずに 403 が出たとき、**まず疑うのは権限であってコードではない**。
 どの API にどの権限が要るかは [docs/aws-credentials.md](./docs/aws-credentials.md) にある。
@@ -65,5 +75,5 @@ npm test                                   # gallery-schema と gallery-manager
 npm run gallery:validate                   # コンテンツの検証（AWS 不要。CI でも走る）
 npm run build --workspace=website          # 静的書き出しまで通す
 
-direnv exec . npm run gallery:check        # sidecar ⇔ S3 の突き合わせ（AWS 読み取りが要る）
+npm run gallery:check                      # sidecar ⇔ S3 の突き合わせ（AWS 読み取りが要る）
 ```

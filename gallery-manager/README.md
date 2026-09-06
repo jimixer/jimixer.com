@@ -9,11 +9,12 @@ S3 に原本と派生物を置く。Web へはデプロイしない（[gallery-a
 ## 起動
 
 ```bash
-direnv exec . npm run dev:gallery    # http://localhost:3001
+npm run dev:gallery    # http://localhost:3001
 ```
 
-`direnv exec .` は省けない。省くと AWS SDK が `default` プロファイルに落ち、S3 操作が
-403 になる（[aws-credentials.md](../docs/aws-credentials.md)）。
+プロファイル（`jimixer-gallery`）は `dev` / `start` が自分で前置きするので、direnv を
+通していなくても動く。差し替えたいときは `AWS_GALLERY_PROFILE` を渡す
+（[aws-credentials.md](../docs/aws-credentials.md)）。
 
 | 変数 | 既定 | 用途 |
 |---|---|---|
@@ -22,9 +23,10 @@ direnv exec . npm run dev:gallery    # http://localhost:3001
 | `ORIGINALS_BUCKET` | `jimixer-com-originals` | 原本の保管先（非公開） |
 | `NEXT_PUBLIC_GALLERY_URL` | — | UI で画像を表示する URL の起点 |
 | `AWS_REGION` | `ap-northeast-1` | |
+| `AWS_GALLERY_PROFILE` | `jimixer-gallery` | 使う AWS プロファイル。`dev` / `start` が宣言する |
 
-資格情報は `.envrc` の `AWS_PROFILE` から来る。`.env.local` に書かない
-（[.env.local.example](./.env.local.example)）。
+資格情報そのもの（SSO のセッション）は `aws sso login --sso-session jimixer` から来る。
+`.env.local` には書かない（[.env.local.example](./.env.local.example)）。
 
 ## 構造
 
@@ -56,5 +58,5 @@ src/components/  フォームと写真アップローダ
 ```bash
 npm test --workspace=gallery-manager
 npm run gallery:validate              # コンテンツの検証（AWS 不要）
-direnv exec . npm run gallery:check   # sidecar ⇔ S3 の突き合わせ
+npm run gallery:check                 # sidecar ⇔ S3 の突き合わせ
 ```

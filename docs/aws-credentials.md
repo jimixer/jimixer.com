@@ -27,18 +27,27 @@ aws sso login --sso-session jimixer
 
 | プロファイル | 権限セット | 使うとき |
 |---|---|---|
-| `jimixer-gallery` | `JimixerComGalleryOps` | 既定。`.envrc` が設定する |
+| `jimixer-gallery` | `JimixerComGalleryOps` | 既定。gallery-manager と `gallery:*` が自分で指定する |
 | `jimixer-admin` | `AdministratorAccess` | `npm run deploy:infra` が `--profile` で自分で指定する |
 
 分ける値打ちは、漏洩したときの被害を減らすことだけではない。**危険な操作に明示的な
-一手を要求する**ことにある。既定が管理者だと、`direnv exec .` を通した全コマンド —
-gallery-manager のローカルサーバーも、エージェントが走らせるスクリプトも — が
-管理者として動く。
+一手を要求する**ことにある。既定が管理者だと、gallery-manager のローカルサーバーも、
+エージェントが走らせるスクリプトも、すべて管理者として動く。
 
-広い権限が要るコマンドは、呼び出し側の環境ではなく**コマンド自身が `--profile` で
-宣言する**（`infrastructure/package.json` の `deploy`）。`AWS_PROFILE=jimixer-admin
-direnv exec . ...` という前置きは効かない — `direnv exec` は .envrc を読む前に direnv の
-状態を巻き戻すため、前置きした値も一緒に破棄され、既定のプロファイルに落ちる。
+**どちらのプロファイルも、呼び出し側の環境ではなくコマンド自身が宣言する。**
+
+| | 宣言 |
+|---|---|
+| `gallery-manager` の `dev` / `start`、`gallery:*` | `AWS_PROFILE=${AWS_GALLERY_PROFILE:-jimixer-gallery}` |
+| `infrastructure` の `deploy` / `deploy:site` | `--profile ${AWS_ADMIN_PROFILE:-jimixer-admin}` |
+
+したがって `AWS_PROFILE=jimixer-admin npm run gallery:check` のような前置きは効かない。
+スクリプトが上書きするため、差し替えるなら `AWS_GALLERY_PROFILE` / `AWS_ADMIN_PROFILE` を
+使う。`direnv exec .` を前置きしても同じ理由で無視される（そもそも `direnv exec` は .envrc を
+読む前に direnv の状態を巻き戻すので、前置きした値はそこで破棄される）。
+
+宣言を持たないのは生の `aws` CLI と `npx tsx` の直呼びで、こちらは `.envrc` を読み込んで
+おく必要がある。
 
 ### `JimixerComGalleryOps` の権限
 
@@ -96,7 +105,7 @@ aws sso-admin create-account-assignment --instance-arn $INST \
 
 ```bash
 direnv exec . aws sts get-caller-identity   # AWSReservedSSO_JimixerComGalleryOps か
-direnv exec . npm run gallery:check          # 3 項目すべて ✓ になるか
+npm run gallery:check                       # 3 項目すべて ✓ になるか
 
 # 原本の読み出しは拒否されるのが正しい
 direnv exec . aws s3api get-object --bucket jimixer-com-originals \
@@ -107,7 +116,7 @@ direnv exec . aws s3api get-object --bucket jimixer-com-originals \
 **`s3:ListBucket` が無い**可能性が高い。まず権限を疑う。
 
 `Error loading SSO Token` はセッション切れ。`aws sso login --sso-session jimixer` を
-やり直す。gallery-manager を起動したままセッションが切れると、UI には 403 が出る。
+やり直す。gallery-manager を起動したままセッションが切れると、UI にそのまま出る。
 
 ## GitHub Actions
 
