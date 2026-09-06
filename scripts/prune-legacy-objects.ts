@@ -8,8 +8,10 @@
  * 不可逆な操作なので既定は dry-run。実際に消すには --execute を渡す。
  *
  * Usage:
- *   direnv exec . npx tsx scripts/prune-legacy-objects.ts            # 対象を表示するだけ
- *   direnv exec . npx tsx scripts/prune-legacy-objects.ts --execute  # 削除する
+ *   npm run gallery:prune-legacy              # 対象を表示するだけ
+ *   npm run gallery:prune-legacy -- --execute  # 削除する
+ *
+ * 直に tsx で走らせるときは direnv を通すこと（プロファイルの宣言が効かないため）。
  */
 import fs from "node:fs/promises";
 import path from "node:path";

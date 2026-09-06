@@ -34,11 +34,11 @@ git: website/content/
 ## 写真を追加する
 
 ```bash
-direnv exec . npm run dev:gallery    # http://localhost:3001
+npm run dev:gallery    # http://localhost:3001
 ```
 
-`direnv exec .` を省くと `default` プロファイルに落ちて 403 になる。
-権限の内訳は [aws-credentials.md](./aws-credentials.md) を参照。
+プロファイル（`jimixer-gallery`）はこのコマンドが自分で宣言するので、direnv を
+通していなくても動く。権限の内訳は [aws-credentials.md](./aws-credentials.md) を参照。
 
 1. バリアントのページを開き、写真をドラッグ&ドロップする
 2. **撮影日時**を確認する。VRChat のファイル名（`VRChat_2026-08-28_03-03-56.813_...`）から
@@ -88,7 +88,7 @@ git add website/content && git commit -m "content(gallery): ..." && git push
 
 ```bash
 npm run gallery:validate              # AWS 不要。CI でも走る
-direnv exec . npm run gallery:check   # S3 との突き合わせ
+npm run gallery:check                 # S3 との突き合わせ
 ```
 
 `gallery:validate` は参照の実在、カバーの不変条件、ID の重複、ファイル名と内容の一致を見る。
@@ -105,8 +105,8 @@ direnv exec . npm run gallery:check   # S3 との突き合わせ
 | コマンド | 用途 |
 |---|---|
 | `npm run gallery:derivatives` | 原本から派生物を再生成する（`.derivatives/` へ出力） |
-| `direnv exec . npm run gallery:upload-originals` | 原本を非公開バケットへ退避する |
-| `direnv exec . npm run gallery:upload-derivatives` | 生成済みの派生物を公開する。原本が 1 枚でも欠けていれば何もしない |
+| `npm run gallery:upload-originals` | 原本を非公開バケットへ退避する |
+| `npm run gallery:upload-derivatives` | 生成済みの派生物を公開する。原本が 1 枚でも欠けていれば何もしない |
 
 いずれも `scripts/migration-manifest.json`（`photoId` と原本の対応）を入力にする。
 gallery-manager 経由で追加された写真は manifest に無く、ローカルに生成物も持たないため、

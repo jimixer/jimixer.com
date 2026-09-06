@@ -31,11 +31,11 @@
     "test:ci": "npm run build --workspace=website && npm run build --workspace=gallery-manager && npm run build --workspace=infrastructure",
     "test": "npm run test --workspace=@jimixer/gallery-schema && npm run test --workspace=gallery-manager",
     "gallery:derivatives": "tsx scripts/generate-derivatives.ts",
-    "gallery:upload-originals": "tsx scripts/upload-originals.ts",
-    "gallery:upload-derivatives": "tsx scripts/upload-derivatives.ts",
+    "gallery:upload-originals": "AWS_PROFILE=${AWS_GALLERY_PROFILE:-jimixer-gallery} tsx scripts/upload-originals.ts",
+    "gallery:upload-derivatives": "AWS_PROFILE=${AWS_GALLERY_PROFILE:-jimixer-gallery} tsx scripts/upload-derivatives.ts",
     "gallery:validate": "tsx scripts/validate-content.ts",
-    "gallery:check": "tsx scripts/check-consistency.ts",
-    "gallery:prune-legacy": "tsx scripts/prune-legacy-objects.ts"
+    "gallery:check": "AWS_PROFILE=${AWS_GALLERY_PROFILE:-jimixer-gallery} tsx scripts/check-consistency.ts",
+    "gallery:prune-legacy": "AWS_PROFILE=${AWS_GALLERY_PROFILE:-jimixer-gallery} tsx scripts/prune-legacy-objects.ts"
   },
   "workspaces": [
     "packages/*",

@@ -262,7 +262,7 @@ cd website && npm run dev
 gallery-manager から行う。手で JSON を書く運用は廃止した。
 
 ```bash
-direnv exec . npm run dev:gallery   # http://localhost:3001
+npm run dev:gallery   # http://localhost:3001
 ```
 
 ドラッグ&ドロップすると、原本の保管 → 派生物の生成と公開 → sidecar の書き込み、の順で

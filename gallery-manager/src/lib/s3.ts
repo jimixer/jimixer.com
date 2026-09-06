@@ -10,10 +10,11 @@ const PUBLIC_BUCKET = process.env.S3_BUCKET || "gallery.jimixer.com";
 const ORIGINALS_BUCKET = process.env.ORIGINALS_BUCKET || "jimixer-com-originals";
 
 /**
- * 権限エラーに原因の候補を添える。
+ * 権限エラーに、どのプロファイルで走ったのかを添える。
  *
- * .envrc が読み込まれていないと default プロファイルに落ち、素の 403 だけが
- * 返る。UI に出るのがそれだけだと原因にたどり着けない。
+ * dev / start はプロファイルを自分で宣言するので、「未設定で default に落ちた」
+ * 形の失敗はもう起きない。残るのは権限が足りない場合と、別のプロファイルを
+ * 渡された場合で、素の 403 だけでは UI からどちらとも見分けられない。
  */
 async function send<T>(operation: () => Promise<T>): Promise<T> {
   try {
@@ -22,10 +23,12 @@ async function send<T>(operation: () => Promise<T>): Promise<T> {
     const status = (error as { $metadata?: { httpStatusCode?: number } }).$metadata
       ?.httpStatusCode;
 
-    if (status === 403 && !process.env.AWS_PROFILE && !process.env.AWS_ACCESS_KEY_ID) {
+    if (status === 403) {
+      const profile = process.env.AWS_PROFILE ?? "未設定（default に落ちています）";
+      const detail = error instanceof Error ? error.message : String(error);
       throw new Error(
-        "S3 へのアクセスが拒否されました。AWS_PROFILE が未設定です — " +
-          "`direnv exec . npm run dev:gallery` で起動し直してください。"
+        `S3 へのアクセスが拒否されました（プロファイル: ${profile}）。` +
+          `どの操作にどの権限が要るかは docs/aws-credentials.md にあります。（${detail}）`
       );
     }
     throw error;

@@ -9,7 +9,8 @@
  * 後者が docs/adr/0003 の事前条件を事後にも確かめる部分にあたる。
  *
  * Usage:
- *   direnv exec . npx tsx scripts/check-consistency.ts
+ *   npm run gallery:check                              # プロファイルは script が宣言する
+ *   direnv exec . npx tsx scripts/check-consistency.ts  # 直呼びは direnv を通す
  */
 import fs from "node:fs/promises";
 import path from "node:path";
