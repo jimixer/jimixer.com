@@ -40,7 +40,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
-          role-session-name: ${{ github.workflow }}-${{ github.run_id }}
+          role-session-name: deploy-website-${{ github.run_id }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Deploy to S3
