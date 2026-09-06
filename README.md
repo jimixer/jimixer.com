@@ -89,35 +89,58 @@ npm install
 
 ### 2. AWS 環境のセットアップ
 
-#### 2.1 IAM ユーザーの作成
+#### 2.1 IAM Identity Center の権限セット
 
-1. AWS マネジメントコンソールで IAM ユーザー `jimixer` を作成
-2. グループ `Administrator` に追加（`AdministratorAccess` ポリシー付与）
-3. アクセスキーを生成
+**恒久的なアクセスキーは作らない。** Identity Center に 2 つの権限セットを用意し、
+ログインして短命な資格情報を得る。
+
+| 権限セット | 用途 |
+|---|---|
+| `JimixerComGalleryOps` | 日常操作。ギャラリーへの書き込みと原本の保管のみ。原本の読み出しと削除は持たない |
+| `AdministratorAccess` | CDK デプロイなど、明示的に必要なときだけ |
+
+作成手順は [docs/aws-credentials.md](./docs/aws-credentials.md) にある。
 
 #### 2.2 AWS CLI Profile 設定
 
+`[sso-session]` 形式には **AWS CLI 2.9 以降**が要る。`aws --version` で確認する。
+
+`~/.aws/config` に追記:
+
+```ini
+[sso-session jimixer]
+sso_start_url = https://<identity-store-id>.awsapps.com/start
+sso_region = ap-northeast-1
+sso_registration_scopes = sso:account:access
+
+[profile jimixer-gallery]
+sso_session = jimixer
+sso_account_id = YOUR_AWS_ACCOUNT_ID
+sso_role_name = JimixerComGalleryOps
+region = ap-northeast-1
+output = json
+
+[profile jimixer-admin]
+sso_session = jimixer
+sso_account_id = YOUR_AWS_ACCOUNT_ID
+sso_role_name = AdministratorAccess
+region = ap-northeast-1
+output = json
+```
+
 ```bash
-# AWS CLI プロファイル設定
-aws configure --profile jimixer
-# AWS Access Key ID: (先ほど生成したキーID)
-# AWS Secret Access Key: (シークレットキー)
-# Default region: ap-northeast-1
-# Default output format: json
+aws sso login --sso-session jimixer
 
-# 環境変数設定ファイルをコピー
+# 環境変数設定ファイルをコピーして編集
 cp .envrc.example .envrc
+vim .envrc
 
-# .envrc を編集して実際の値を設定
-vim .envrc  # または好きなエディタで編集
-
-# direnv で環境変数を有効化
 direnv allow
 ```
 
 **`.envrc` に設定する環境変数:**
 ```bash
-export AWS_PROFILE=jimixer
+export AWS_PROFILE=${AWS_PROFILE:-jimixer-gallery}
 export AWS_ACCOUNT_ID=YOUR_AWS_ACCOUNT_ID       # 自分のAWSアカウントID
 export AWS_REGION=ap-northeast-1
 export CERTIFICATE_ARN=arn:aws:acm:us-east-1:YOUR_ACCOUNT_ID:certificate/YOUR_CERT_ID
@@ -162,7 +185,7 @@ npx cdk bootstrap
 以下の環境変数が正しく設定されているか確認：
 
 ```bash
-echo $AWS_PROFILE          # jimixer
+echo $AWS_PROFILE          # jimixer-gallery
 echo $AWS_ACCOUNT_ID       # あなたのAWSアカウントID
 echo $AWS_REGION           # ap-northeast-1
 echo $CERTIFICATE_ARN      # 証明書のARN

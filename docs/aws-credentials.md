@@ -5,7 +5,8 @@
 
 | 経路 | 資格情報 | 用途 |
 |---|---|---|
-| ローカル | `.envrc` の `AWS_PROFILE=jimixer` | gallery-manager、`scripts/` の一括処理、CDK デプロイ |
+| ローカルの日常操作 | Identity Center の権限セット `JimixerComGalleryOps`（プロファイル `jimixer-gallery`） | gallery-manager、`scripts/` の一括処理 |
+| ローカルの管理操作 | Identity Center の `AdministratorAccess`（プロファイル `jimixer-admin`） | CDK デプロイなど、明示的に必要なときだけ |
 | GitHub Actions | OIDC で引き受ける IAM ロール（**鍵を置かない**） | `deploy.yml` / `daily-rebuild.yml`（サイトの同期と CloudFront の無効化） |
 
 ## なぜ分けるか
@@ -13,14 +14,28 @@
 `deploy.yml` はサイトの静的ファイルを置くだけで、**ギャラリーの画像にも原本にも触らない**。
 逆にローカルの操作は原本を扱う。CI に原本バケットへの権限を渡す理由が無いので渡さない。
 
-## ローカル（プロファイル `jimixer`）
+## ローカル
 
-> **現状はまだこの姿になっていない。** プロファイル `jimixer` の IAM ユーザーは
-> `Administrator` グループに属していて `AdministratorAccess` を持つ。下のポリシーは
-> 到達したい姿であって、いまの権限ではない。つまり `direnv exec .` を通した全コマンドが
-> 管理者として走る。分離は未着手（GitHub Actions 側は完了済み）。
+**恒久的なアクセスキーは置かない。** IAM Identity Center にログインして、
+権限セットに対応する短命な資格情報を得る。
 
-### 必要な権限
+```bash
+aws sso login --sso-session jimixer
+```
+
+プロファイルは 2 つある。既定は狭いほうで、広いほうは明示的に指定したときだけ使う。
+
+| プロファイル | 権限セット | 使うとき |
+|---|---|---|
+| `jimixer-gallery` | `JimixerComGalleryOps` | 既定。`.envrc` が設定する |
+| `jimixer-admin` | `AdministratorAccess` | `AWS_PROFILE=jimixer-admin npm run deploy:infra` のように前置きする |
+
+分ける値打ちは、漏洩したときの被害を減らすことだけではない。**危険な操作に明示的な
+一手を要求する**ことにある。既定が管理者だと、`direnv exec .` を通した全コマンド —
+gallery-manager のローカルサーバーも、エージェントが走らせるスクリプトも — が
+管理者として動く。
+
+### `JimixerComGalleryOps` の権限
 
 コードが実際に呼んでいる API から逆算したもの。
 
@@ -32,82 +47,62 @@
 | 原本の存在確認 | `s3:ListBucket` | `jimixer-com-originals` |
 | 整合性チェック | `s3:ListBucket` | 両方のバケット |
 
-**`s3:ListBucket` を落とすと、原本の保管はできるのに確認ができない**という状態になる。
-`upload-derivatives.ts` は「原本が 1 枚でも欠けていれば何も公開しない」という事前条件
-（[ADR-0003](./adr/0003-originals-are-immutable-and-gate-publication.md)）をこの権限で
-確かめているため、そこだけ 403 になって全体が止まる。実際にこの状態を踏んでいる。
+**原本の `s3:GetObject` と `s3:DeleteObject` は意図的に入れていない。** 原本は不変で、
+サイトから写真を降ろしても消さない（[ADR-0003](./adr/0003-originals-are-immutable-and-gate-publication.md)）。
+取り出しが要るのは数年に一度の一括再処理のときだけなので、そのとき別の資格情報で行う。
 
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "GalleryObjects",
-      "Effect": "Allow",
-      "Action": ["s3:PutObject", "s3:DeleteObject"],
-      "Resource": "arn:aws:s3:::gallery.jimixer.com/gallery/*"
-    },
-    {
-      "Sid": "OriginalObjects",
-      "Effect": "Allow",
-      "Action": ["s3:PutObject"],
-      "Resource": "arn:aws:s3:::jimixer-com-originals/originals/*"
-    },
-    {
-      "Sid": "ListForConsistencyChecks",
-      "Effect": "Allow",
-      "Action": ["s3:ListBucket"],
-      "Resource": [
-        "arn:aws:s3:::gallery.jimixer.com",
-        "arn:aws:s3:::jimixer-com-originals"
-      ]
-    }
-  ]
-}
-```
+`s3:ListBucket` を落とすと、原本の保管はできるのに確認ができないという状態になる。
+`upload-derivatives.ts` は「原本が 1 枚でも欠けていれば何も公開しない」という事前条件を
+この権限で確かめているため、そこだけ 403 になって全体が止まる。実際にこの状態を踏んでいる。
 
-原本の `s3:GetObject` と `s3:DeleteObject` は**意図的に入れていない**。原本は不変で、
-サイトから写真を降ろしても消さない。取り出しが必要になるのは数年に一度の一括再処理の
-ときだけなので、そのとき別の資格情報で行う。
-
-### CDK デプロイ
-
-`npm run deploy:infra` は上記に加えて CloudFormation と、CDK が bootstrap した
-`cdk-*` ロールへの `sts:AssumeRole` が要る。スタックが触る範囲（S3・CloudFront・
-Route53・ACM）はロール側の権限で実行される。
+`HeadObject` を使わないのも同じ理由による。**`HeadObject` は `s3:GetObject` を要求する**ので、
+原本の保管判定は `ListObjectsV2` の前方一致で行う（`scripts/upload-originals.ts`、
+`gallery-manager/src/lib/s3.ts` の `hasOriginal`）。
 
 ### 発行手順
 
+権限セットは作成済み。作り直す場合はこの手順になる。
+
 ```bash
-# 1. IAM ユーザーを作る（コンソール or CLI）。プログラムによるアクセスのみ
-aws iam create-user --user-name jimixer-com-local
+INST=$(aws sso-admin list-instances --query "Instances[0].InstanceArn" --output text)
 
-# 2. 上のポリシーを JSON ファイルに保存して割り当てる
-aws iam put-user-policy \
-  --user-name jimixer-com-local \
-  --policy-name jimixer-com-gallery \
-  --policy-document file://gallery-policy.json
+# 1. 権限セットを作る。説明文に使えるのは ASCII のみ
+aws sso-admin create-permission-set --instance-arn $INST \
+  --name JimixerComGalleryOps \
+  --description "Daily gallery operations for jimixer.com. No read or delete on originals." \
+  --session-duration PT4H
 
-# 3. アクセスキーを発行する。表示されるのは 1 度だけ
-aws iam create-access-key --user-name jimixer-com-local
+# 2. 上の表のポリシーを JSON にして貼る
+aws sso-admin put-inline-policy-to-permission-set --instance-arn $INST \
+  --permission-set-arn <ARN> --inline-policy file://gallery-ops-policy.json
 
-# 4. プロファイルとして登録する
-aws configure --profile jimixer
-
-# 5. .envrc を用意して direnv に読ませる
-cp .envrc.example .envrc   # AWS_ACCOUNT_ID と CERTIFICATE_ARN を埋める
-direnv allow
+# 3. ユーザーに割り当てる
+aws sso-admin create-account-assignment --instance-arn $INST \
+  --target-id <ACCOUNT_ID> --target-type AWS_ACCOUNT \
+  --permission-set-arn <ARN> \
+  --principal-type USER --principal-id <USER_ID>
 ```
+
+ローカル側は `~/.aws/config` に `[sso-session jimixer]` と 2 つのプロファイルを置き、
+`.envrc.example` をコピーして `direnv allow` する。`[sso-session]` 形式には
+**AWS CLI 2.9 以降**が要る。
 
 ### 確認
 
 ```bash
-direnv exec . aws sts get-caller-identity   # 期待するユーザーか
+direnv exec . aws sts get-caller-identity   # AWSReservedSSO_JimixerComGalleryOps か
 direnv exec . npm run gallery:check          # 3 項目すべて ✓ になるか
+
+# 原本の読み出しは拒否されるのが正しい
+direnv exec . aws s3api get-object --bucket jimixer-com-originals \
+  --key originals/<photoId>.png /dev/null
 ```
 
 `gallery:check` が「原本の欠け」で落ちる場合、原本が無いのではなく
 **`s3:ListBucket` が無い**可能性が高い。まず権限を疑う。
+
+`Error loading SSO Token` はセッション切れ。`aws sso login --sso-session jimixer` を
+やり直す。gallery-manager を起動したままセッションが切れると、UI には 403 が出る。
 
 ## GitHub Actions
 
@@ -166,13 +161,19 @@ direnv exec . aws iam create-open-id-connect-provider \
 
 ## 漏洩したとき
 
-対象はローカルのアクセスキーだけ。GitHub Actions には鍵が無い。
+**このリポジトリの経路には、恒久的なアクセスキーが 1 本も無い。** ローカルは
+Identity Center の短命な資格情報、GitHub Actions は OIDC で、どちらも盗んでも
+期限が来れば使えなくなる。差し替えるべき鍵が無いので、鍵のローテーションという
+運用も無い。
+
+疑わしいときに止めるのはセッションのほうになる。
 
 ```bash
-aws iam list-access-keys --user-name <user>
-aws iam update-access-key --user-name <user> --access-key-id <id> --status Inactive
-aws iam create-access-key --user-name <user>     # 新しい鍵を発行して差し替える
-aws iam delete-access-key --user-name <user> --access-key-id <id>
+# Identity Center のセッションを失効させる（該当ユーザーの全セッション）
+aws sso-admin list-instances
+aws identitystore list-users --identity-store-id <ID>
+# 権限セットの割り当てを外せば、次回のログインから引き受けられなくなる
+aws sso-admin delete-account-assignment --instance-arn <ARN> ...
 ```
 
 公開バケットに置いているのは元々公開している写真なので、漏洩で失うのは

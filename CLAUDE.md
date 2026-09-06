@@ -8,9 +8,10 @@ VRChat で撮影した写真を公開する個人サイト。静的サイト（`
 
 ## AWS を触るときは direnv を通す
 
-このリポジトリの AWS 操作は `.envrc`（git 管理外）が設定する `AWS_PROFILE=jimixer` を前提とする。
-シェルに direnv のフックが無い環境（エージェントのセッションを含む）では読み込まれず、
-`default` プロファイルに落ちて 403 になるか、意図しない資格情報で書き込むことになる。
+このリポジトリの AWS 操作は `.envrc`（git 管理外）が設定する `AWS_PROFILE=jimixer-gallery` を
+前提とする。シェルに direnv のフックが無い環境（エージェントのセッションを含む）では
+読み込まれず、`default` プロファイルに落ちて 403 になるか、意図しない資格情報で
+書き込むことになる。
 
 ```bash
 direnv exec . npm run gallery:upload-derivatives
@@ -18,8 +19,19 @@ direnv exec . npm run dev:gallery
 direnv exec . aws s3 ls s3://gallery.jimixer.com/gallery/
 ```
 
+資格情報は IAM Identity Center の短命なもので、恒久的なアクセスキーは無い。
+`Error loading SSO Token` が出たらセッション切れなので `aws sso login --sso-session jimixer`。
+
+**既定のプロファイルは意図的に狭い。** 原本の読み出しも削除も、CloudFormation も持たない。
+CDK デプロイのように広い権限が要るときだけ前置きする。
+
+```bash
+AWS_PROFILE=jimixer-admin direnv exec . npm run deploy:infra
+```
+
+権限が足りずに 403 が出たとき、**まず疑うのは権限であってコードではない**。
+どの API にどの権限が要るかは [docs/aws-credentials.md](./docs/aws-credentials.md) にある。
 `.envrc` が無ければ `.envrc.example` をコピーして `direnv allow`。
-必要な IAM 権限と発行手順は [docs/aws-credentials.md](./docs/aws-credentials.md) にある。
 
 ## ワークスペース
 
