@@ -28,12 +28,17 @@ aws sso login --sso-session jimixer
 | プロファイル | 権限セット | 使うとき |
 |---|---|---|
 | `jimixer-gallery` | `JimixerComGalleryOps` | 既定。`.envrc` が設定する |
-| `jimixer-admin` | `AdministratorAccess` | `AWS_PROFILE=jimixer-admin npm run deploy:infra` のように前置きする |
+| `jimixer-admin` | `AdministratorAccess` | `npm run deploy:infra` が `--profile` で自分で指定する |
 
 分ける値打ちは、漏洩したときの被害を減らすことだけではない。**危険な操作に明示的な
 一手を要求する**ことにある。既定が管理者だと、`direnv exec .` を通した全コマンド —
 gallery-manager のローカルサーバーも、エージェントが走らせるスクリプトも — が
 管理者として動く。
+
+広い権限が要るコマンドは、呼び出し側の環境ではなく**コマンド自身が `--profile` で
+宣言する**（`infrastructure/package.json` の `deploy`）。`AWS_PROFILE=jimixer-admin
+direnv exec . ...` という前置きは効かない — `direnv exec` は .envrc を読む前に direnv の
+状態を巻き戻すため、前置きした値も一緒に破棄され、既定のプロファイルに落ちる。
 
 ### `JimixerComGalleryOps` の権限
 
