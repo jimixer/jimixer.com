@@ -7,17 +7,20 @@ import * as route53 from "aws-cdk-lib/aws-route53";
 import * as targets from "aws-cdk-lib/aws-route53-targets";
 import { Construct } from "constructs";
 import * as path from "path";
+import { GitHubActionsDeployRole } from "./github-actions-deploy-role";
 
 export interface WebsiteStackProps extends cdk.StackProps {
   domainName: string;
   certificateArn: string;
+  /** サイトをデプロイできる GitHub リポジトリ（`owner/repo`） */
+  githubRepository: string;
 }
 
 export class WebsiteStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: WebsiteStackProps) {
     super(scope, id, props);
 
-    const { domainName, certificateArn } = props;
+    const { domainName, certificateArn, githubRepository } = props;
 
     // S3 Bucket for website hosting
     const websiteBucket = new s3.Bucket(this, "WebsiteBucket", {
@@ -172,6 +175,14 @@ export class WebsiteStack extends cdk.Stack {
         priceClass: cloudfront.PriceClass.PRICE_CLASS_200,
       }
     );
+
+    // GitHub Actions がサイトを配信するために引き受けるロール。
+    // ギャラリーのバケットと原本バケットは意図的に渡していない
+    new GitHubActionsDeployRole(this, "GitHubActionsDeployRole", {
+      repository: githubRepository,
+      websiteBucket,
+      distribution,
+    });
 
     // Route53 Hosted Zone (assuming it already exists)
     const hostedZone = route53.HostedZone.fromLookup(this, "HostedZone", {
