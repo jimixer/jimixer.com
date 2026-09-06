@@ -1,4 +1,9 @@
 {
+  // このパッケージは型検査だけを行い、成果物を出さない（`tsc --noEmit`）。
+  //
+  // cdk.json は `ts-node bin/jimixer-com.ts` でソースを直接実行するが、Node の
+  // 解決順は .ts より .js が先になる。lib/ に .js を吐くと、古い生成物がソースを
+  // 覆い隠し、**現在のブランチではなく最後にビルドした内容がデプロイされる**。
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
