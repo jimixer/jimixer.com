@@ -38,4 +38,11 @@ Worker にカスタムドメインを付けるには、そのドメインのゾ�
 - DNS の管理画面が AWS と Cloudflare の2か所に分かれる。登録と証明書は AWS、レコードは Cloudflare に置く
 - ネームサーバーの切り替えが行き渡るまで最大48時間かかる。その間は新旧のゾーンが同じ答えを返すようにする
 
+## 追記（2026-10-03）
+
+Cloudflare のダッシュボードの推奨に従い、次のレコードを足した。
+
+- メールは使わないので、受信を拒否してなりすましを防ぐ。Null MX（`0 .`）、SPF（`v=spf1 -all`）、`_dmarc` の DMARC（`p=reject`）の3本。メールを使うことになったらこの3本を外す
+- `www.jimixer.com` は、プロキシ有効のダミーの AAAA（`100::`）と Single Redirect のルールで `https://jimixer.com` へ 301 で転送する。パスとクエリは保つ。プロキシを使うのは www だけで、CloudFront の前に Cloudflare を重ねないという決定は変わらない
+
 移行の手順と、2026-09-30 時点のレコードの棚卸しは、burage01 リポジトリの `.scratch/workers-static-assets/` にある。
