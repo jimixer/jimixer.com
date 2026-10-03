@@ -4,8 +4,6 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as acm from "aws-cdk-lib/aws-certificatemanager";
-import * as route53 from "aws-cdk-lib/aws-route53";
-import * as targets from "aws-cdk-lib/aws-route53-targets";
 import { Construct } from "constructs";
 import * as path from "path";
 import { GitHubActionsDeployRole } from "./github-actions-deploy-role";
@@ -205,30 +203,9 @@ export class WebsiteStack extends cdk.Stack {
       distribution,
     });
 
-    // Route53 Hosted Zone (assuming it already exists)
-    const hostedZone = route53.HostedZone.fromLookup(this, "HostedZone", {
-      domainName,
-    });
-
-    // Route53 A Record for main website
-    new route53.ARecord(this, "AliasRecord", {
-      zone: hostedZone,
-      recordName: domainName,
-      target: route53.RecordTarget.fromAlias(
-        new targets.CloudFrontTarget(distribution)
-      ),
-    });
-
-    // Route53 A Record for gallery subdomain
-    new route53.ARecord(this, "GalleryAliasRecord", {
-      zone: hostedZone,
-      recordName: `gallery.${domainName}`,
-      target: route53.RecordTarget.fromAlias(
-        new targets.CloudFrontTarget(galleryDistribution)
-      ),
-    });
-
     // Outputs
+    // DNS のレコードは Cloudflare にあり、2つの DistributionDomainName へ CNAME で向けている
+    // （docs/adr/0004）。ディストリビューションを作り直したら Cloudflare 側も手で直す
     new cdk.CfnOutput(this, "BucketName", {
       value: websiteBucket.bucketName,
       description: "S3 Bucket Name",
