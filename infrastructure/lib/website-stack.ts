@@ -172,6 +172,11 @@ export class WebsiteStack extends cdk.Stack {
       ],
       priceClass: cloudfront.PriceClass.PRICE_CLASS_200,
     });
+    // CDK は LIST を渡すと defaultRootObject の有無を見ずに警告する。上で指定済み
+    cdk.Annotations.of(distribution).acknowledgeWarning(
+      "@aws-cdk/aws-cloudfront-origins:listBucketSecurityRisk",
+      "defaultRootObject を指定しているのでルートでバケットの一覧は返らない"
+    );
 
     // CloudFront Distribution for Gallery Bucket
     const galleryDistribution = new cloudfront.Distribution(
