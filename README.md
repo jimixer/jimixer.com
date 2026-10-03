@@ -211,7 +211,7 @@ npx cdk deploy --require-approval never
 - CloudFront Distribution (with CloudFront Function for URL rewriting)
 - CloudFront Function: URL 正規化（trailing slash 処理）
 - Route 53 A Record: `jimixer.com` → CloudFront
-- Origin Access Identity (OAI)
+- Origin Access Control (OAC)
 
 ### 4. Website のビルド & デプロイ
 
@@ -346,7 +346,7 @@ aws cloudfront create-invalidation \
 3. **CloudFront Function**: URL 正規化（trailing slash 処理）
 4. **Route 53**: DNS 管理（`jimixer.com` → CloudFront）
 5. **ACM**: SSL/TLS 証明書（us-east-1）
-6. **OAI**: S3 への安全なアクセス制御
+6. **OAC**: S3 への安全なアクセス制御
 
 ## AWS Costs Estimate
 

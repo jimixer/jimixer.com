@@ -82,12 +82,6 @@ export class WebsiteStack extends cdk.Stack {
       })
     );
 
-    // CloudFront Origin Access Identity
-    // 配信は OAC に移った。OAC への切り替えが伝播しきるまでの保険として残している
-    const oai = new cloudfront.OriginAccessIdentity(this, "OAI");
-    websiteBucket.grantRead(oai);
-    galleryBucket.grantRead(oai);
-
     // CloudFront Function for URL rewriting
     const urlRewriteFunction = new cloudfront.Function(
       this,
