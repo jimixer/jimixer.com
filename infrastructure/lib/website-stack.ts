@@ -83,6 +83,7 @@ export class WebsiteStack extends cdk.Stack {
     );
 
     // CloudFront Origin Access Identity
+    // 配信は OAC に移った。OAC への切り替えが伝播しきるまでの保険として残している
     const oai = new cloudfront.OriginAccessIdentity(this, "OAI");
     websiteBucket.grantRead(oai);
     galleryBucket.grantRead(oai);
@@ -145,8 +146,12 @@ export class WebsiteStack extends cdk.Stack {
     // CloudFront Distribution
     const distribution = new cloudfront.Distribution(this, "Distribution", {
       defaultBehavior: {
-        origin: new origins.S3Origin(websiteBucket, {
-          originAccessIdentity: oai,
+        // 存在しないパスで 404 を返すために LIST が要る（無いと S3 は 403 を返す）
+        origin: origins.S3BucketOrigin.withOriginAccessControl(websiteBucket, {
+          originAccessLevels: [
+            cloudfront.AccessLevel.READ,
+            cloudfront.AccessLevel.LIST,
+          ],
         }),
         viewerProtocolPolicy:
           cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
@@ -180,9 +185,9 @@ export class WebsiteStack extends cdk.Stack {
       "GalleryDistribution",
       {
         defaultBehavior: {
-          origin: new origins.S3Origin(galleryBucket, {
-            originAccessIdentity: oai,
-          }),
+          // LIST は渡さない。ルートに defaultRootObject が無く、
+          // 渡すとバケットの一覧がそのまま公開される
+          origin: origins.S3BucketOrigin.withOriginAccessControl(galleryBucket),
           viewerProtocolPolicy:
             cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
           allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
@@ -194,35 +199,6 @@ export class WebsiteStack extends cdk.Stack {
         priceClass: cloudfront.PriceClass.PRICE_CLASS_200,
       }
     );
-
-    // OAI から OAC へ移る段階 1。オリジンを切り替える前に、各 distribution 自身に
-    // バケットを読ませておく。切り替えの伝播中に 403 が出ないようにするため
-    const grantToDistribution = (
-      bucket: s3.Bucket,
-      dist: cloudfront.Distribution,
-      actions: string[],
-      resources: string[]
-    ) =>
-      bucket.addToResourcePolicy(
-        new iam.PolicyStatement({
-          principals: [new iam.ServicePrincipal("cloudfront.amazonaws.com")],
-          actions,
-          resources,
-          conditions: { StringEquals: { "AWS:SourceArn": dist.distributionArn } },
-        })
-      );
-    // website は存在しないパスで 404 を返すために ListBucket が要る（無いと S3 は 403 を返す）
-    grantToDistribution(
-      websiteBucket,
-      distribution,
-      ["s3:GetObject", "s3:ListBucket"],
-      [websiteBucket.arnForObjects("*"), websiteBucket.bucketArn]
-    );
-    // gallery には ListBucket を渡さない。ルートに defaultRootObject が無く、
-    // 渡すとバケットの一覧がそのまま公開される
-    grantToDistribution(galleryBucket, galleryDistribution, ["s3:GetObject"], [
-      galleryBucket.arnForObjects("*"),
-    ]);
 
     // GitHub Actions がサイトを配信するために引き受けるロール。
     // ギャラリーのバケットと原本バケットは意図的に渡していない

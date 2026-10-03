@@ -13,7 +13,7 @@
     "deploy:site": "npm run build --workspace=../website && aws s3 sync ../website/out/ s3://$(aws cloudformation describe-stacks --stack-name JimixerComStack --query 'Stacks[0].Outputs[?OutputKey==`BucketName`].OutputValue' --output text --profile ${AWS_ADMIN_PROFILE:-jimixer-admin}) --delete --profile ${AWS_ADMIN_PROFILE:-jimixer-admin}"
   },
   "dependencies": {
-    "aws-cdk-lib": "^2.120.0",
+    "aws-cdk-lib": "^2.156.0",
     "constructs": "^10.3.0",
     "source-map-support": "^0.5.21"
   },
