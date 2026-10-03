@@ -82,11 +82,6 @@ export class WebsiteStack extends cdk.Stack {
       })
     );
 
-    // CloudFront Origin Access Identity
-    const oai = new cloudfront.OriginAccessIdentity(this, "OAI");
-    websiteBucket.grantRead(oai);
-    galleryBucket.grantRead(oai);
-
     // CloudFront Function for URL rewriting
     const urlRewriteFunction = new cloudfront.Function(
       this,
@@ -145,8 +140,12 @@ export class WebsiteStack extends cdk.Stack {
     // CloudFront Distribution
     const distribution = new cloudfront.Distribution(this, "Distribution", {
       defaultBehavior: {
-        origin: new origins.S3Origin(websiteBucket, {
-          originAccessIdentity: oai,
+        // 存在しないパスで 404 を返すために LIST が要る（無いと S3 は 403 を返す）
+        origin: origins.S3BucketOrigin.withOriginAccessControl(websiteBucket, {
+          originAccessLevels: [
+            cloudfront.AccessLevel.READ,
+            cloudfront.AccessLevel.LIST,
+          ],
         }),
         viewerProtocolPolicy:
           cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
@@ -173,6 +172,11 @@ export class WebsiteStack extends cdk.Stack {
       ],
       priceClass: cloudfront.PriceClass.PRICE_CLASS_200,
     });
+    // CDK は LIST を渡すと defaultRootObject の有無を見ずに警告する。上で指定済み
+    cdk.Annotations.of(distribution).acknowledgeWarning(
+      "@aws-cdk/aws-cloudfront-origins:listBucketSecurityRisk",
+      "defaultRootObject を指定しているのでルートでバケットの一覧は返らない"
+    );
 
     // CloudFront Distribution for Gallery Bucket
     const galleryDistribution = new cloudfront.Distribution(
@@ -180,9 +184,9 @@ export class WebsiteStack extends cdk.Stack {
       "GalleryDistribution",
       {
         defaultBehavior: {
-          origin: new origins.S3Origin(galleryBucket, {
-            originAccessIdentity: oai,
-          }),
+          // LIST は渡さない。ルートに defaultRootObject が無く、
+          // 渡すとバケットの一覧がそのまま公開される
+          origin: origins.S3BucketOrigin.withOriginAccessControl(galleryBucket),
           viewerProtocolPolicy:
             cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
           allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,

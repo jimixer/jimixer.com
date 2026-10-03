@@ -151,6 +151,14 @@ index は**ビルド時にディレクトリを走査して組み立てる**。�
    段階 1 で共有 OAI への読み取り権限を追加（公開読み取りは維持）、
    伝播を確認してから段階 2 で公開読み取りと CORS を外した。
 
+   その後、非推奨の `S3Origin` をやめて OAI から OAC へ移った。gallery の distribution には
+   `defaultRootObject` が無く、OAI に渡していた `s3:List*` のせいでルート（`/`）が
+   バケットの一覧を返していた。OAC では gallery に `s3:GetObject` だけを渡している。
+   website には存在しないパスで 404 を返すために `s3:ListBucket` も渡している（無いと
+   S3 は 403 を返し、404 ページが出ない）。移行は同じ理由で 3 段階に分けた。
+   バケットポリシーに distribution 自身への許可を足す、オリジンを OAC に切り替える、
+   OAI を外す、の順である。
+
 `sortImages` の廃止に伴い、`gallery-manager` のそのテストも削除される。
 
 移行前の公開オブジェクト 42 件は本番反映後に削除済み（`npm run gallery:prune-legacy`）。
