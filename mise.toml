@@ -1,2 +1,17 @@
 [tools]
 node = "20.20.0"
+
+# 環境変数の資格情報は使わない。IAM Identity Center の SSO プロファイルに寄せる。
+#
+# AWS_PROFILE は既定の（狭いほうの）プロファイル。広い権限が要るコマンドは
+# コマンド自身が --profile で宣言する（infrastructure/package.json の deploy）。
+# mise は呼び出し側の値を上書きするので、`AWS_PROFILE=jimixer-admin mise x -- ...`
+# のような前置きは効かない。呼び出し側の環境に依存させないこと。
+#
+# アカウント ID と証明書の ARN はリポジトリに残さない。mise.local.toml.example を
+# mise.local.toml にコピーして書く。
+[env]
+AWS_ACCESS_KEY_ID = false
+AWS_SECRET_ACCESS_KEY = false
+AWS_PROFILE = "jimixer-gallery"
+AWS_REGION = "ap-northeast-1"

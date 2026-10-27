@@ -66,10 +66,9 @@ jimixer.com/
 
 ## Prerequisites
 
-- Node.js 20.x (mise で管理)
+- mise (Node.js のバージョンと環境変数を管理)
 - AWS CLI v2
 - 個人用 AWS アカウント（ホビー用途）
-- direnv (推奨: AWS profile 自動切り替え)
 
 ## Setup
 
@@ -128,20 +127,12 @@ output = json
 ```bash
 aws sso login --sso-session jimixer
 
-# 環境変数設定ファイルをコピーして編集
-cp .envrc.example .envrc
-vim .envrc
-
-direnv allow
+# アカウント ID と証明書の ARN を埋める（mise.local.toml はコミットしない）
+cp mise.local.toml.example mise.local.toml
+vim mise.local.toml
 ```
 
-**`.envrc` に設定する環境変数:**
-```bash
-export AWS_PROFILE=${AWS_PROFILE:-jimixer-gallery}
-export AWS_ACCOUNT_ID=YOUR_AWS_ACCOUNT_ID       # 自分のAWSアカウントID
-export AWS_REGION=ap-northeast-1
-export CERTIFICATE_ARN=arn:aws:acm:us-east-1:YOUR_ACCOUNT_ID:certificate/YOUR_CERT_ID
-```
+`AWS_PROFILE` と `AWS_REGION` は `mise.toml` の `[env]` にあり、ディレクトリに入ると mise が読み込む。
 
 #### 2.3 Route 53 でドメイン取得
 

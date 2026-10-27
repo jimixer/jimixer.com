@@ -2,7 +2,7 @@
  * AWS を触るスクリプトの入口で、資格情報の出所を確かめる。
  *
  * npm script は自分でプロファイルを宣言するので、そちらから実行する限りここは
- * 素通りする。残るのは `npx tsx scripts/...` の直呼びで、その場合 `.envrc` が
+ * 素通りする。残るのは `npx tsx scripts/...` の直呼びで、その場合 `mise.toml` の `[env]` が
  * 読み込まれていなければ `default` プロファイルに落ちる。エラーが 403 の形でしか
  * 出ないため原因が分かりにくく、最悪の場合は意図しない場所へ書き込む。
  */
@@ -18,7 +18,7 @@ export function requireAwsEnv(): void {
       "",
       "直に tsx で走らせるなら、プロファイルは呼び出し側で与えてください。",
       "",
-      "  direnv exec . npx tsx scripts/upload-derivatives.ts",
+      "  mise x -- npx tsx scripts/upload-derivatives.ts",
       "",
       "詳細は docs/aws-credentials.md を参照してください。",
     ].join("\n")

@@ -43,11 +43,10 @@ aws sso login --sso-session jimixer
 
 したがって `AWS_PROFILE=jimixer-admin npm run gallery:check` のような前置きは効かない。
 スクリプトが上書きするため、差し替えるなら `AWS_GALLERY_PROFILE` / `AWS_ADMIN_PROFILE` を
-使う。`direnv exec .` を前置きしても同じ理由で無視される（そもそも `direnv exec` は .envrc を
-読む前に direnv の状態を巻き戻すので、前置きした値はそこで破棄される）。
+使う。`mise x --` を通しても同じで、mise も `mise.toml` の `AWS_PROFILE` で呼び出し側の値を上書きする。
 
-宣言を持たないのは生の `aws` CLI と `npx tsx` の直呼びで、こちらは `.envrc` を読み込んで
-おく必要がある。
+宣言を持たないのは生の `aws` CLI と `npx tsx` の直呼びで、こちらは `mise x --` を通して
+`mise.toml` の `[env]` を読み込む必要がある。
 
 ### `JimixerComGalleryOps` の権限
 
@@ -98,17 +97,17 @@ aws sso-admin create-account-assignment --instance-arn $INST \
 ```
 
 ローカル側は `~/.aws/config` に `[sso-session jimixer]` と 2 つのプロファイルを置き、
-`.envrc.example` をコピーして `direnv allow` する。`[sso-session]` 形式には
+`mise.local.toml.example` を `mise.local.toml` にコピーして値を埋め、`mise trust` する。`[sso-session]` 形式には
 **AWS CLI 2.9 以降**が要る。
 
 ### 確認
 
 ```bash
-direnv exec . aws sts get-caller-identity   # AWSReservedSSO_JimixerComGalleryOps か
-npm run gallery:check                       # 3 項目すべて ✓ になるか
+mise x -- aws sts get-caller-identity   # AWSReservedSSO_JimixerComGalleryOps か
+npm run gallery:check                   # 3 項目すべて ✓ になるか
 
 # 原本の読み出しは拒否されるのが正しい
-direnv exec . aws s3api get-object --bucket jimixer-com-originals \
+mise x -- aws s3api get-object --bucket jimixer-com-originals \
   --key originals/<photoId>.png /dev/null
 ```
 
@@ -160,7 +159,7 @@ main 以外のブランチから `workflow_dispatch` しても AssumeRole は失
 他のプロジェクトが同居している）。CDK からは参照するだけなので、無ければ先に作る。
 
 ```bash
-direnv exec . aws iam create-open-id-connect-provider \
+mise x -- aws iam create-open-id-connect-provider \
   --url https://token.actions.githubusercontent.com \
   --client-id-list sts.amazonaws.com \
   --thumbprint-list 6938fd4d98bab03faadb97b34396831e3780aea1

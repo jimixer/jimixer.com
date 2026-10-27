@@ -12,7 +12,7 @@ S3 に原本と派生物を置く。Web へはデプロイしない（[gallery-a
 npm run dev:gallery    # http://localhost:3001
 ```
 
-プロファイル（`jimixer-gallery`）は `dev` / `start` が自分で前置きするので、direnv を
+プロファイル（`jimixer-gallery`）は `dev` / `start` が自分で前置きするので、mise を
 通していなくても動く。差し替えたいときは `AWS_GALLERY_PROFILE` を渡す
 （[aws-credentials.md](../docs/aws-credentials.md)）。
 

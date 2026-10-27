@@ -11,7 +11,7 @@
  *   npm run gallery:prune-legacy              # 対象を表示するだけ
  *   npm run gallery:prune-legacy -- --execute  # 削除する
  *
- * 直に tsx で走らせるときは direnv を通すこと（プロファイルの宣言が効かないため）。
+ * 直に tsx で走らせるときは mise を通すこと（プロファイルの宣言が効かないため）。
  */
 import fs from "node:fs/promises";
 import path from "node:path";

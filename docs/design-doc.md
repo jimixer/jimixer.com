@@ -124,7 +124,7 @@
 * [x] **IAM User:** 設定済み
   * AdministratorAccess 権限
   * `~/.aws/credentials` にプロファイル設定
-  * direnv で自動プロファイル切り替え (`.envrc` で `AWS_PROFILE` 設定)
+  * mise で自動プロファイル切り替え (`mise.toml` の `[env]` で `AWS_PROFILE` 設定)
 
 ### **Cost Estimate (月額)**
 

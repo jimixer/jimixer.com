@@ -1,0 +1,8 @@
+# mise.local.toml にコピーして値を埋める（mise.local.toml はコミットしない）。
+[env]
+# CDK が読む
+AWS_ACCOUNT_ID = "YOUR_AWS_ACCOUNT_ID"
+# CloudFront 用なので us-east-1 で発行したもの
+CERTIFICATE_ARN = "arn:aws:acm:us-east-1:YOUR_ACCOUNT_ID:certificate/YOUR_CERTIFICATE_ID"
+# 既定は jimixer.com
+# DOMAIN_NAME = "jimixer.com"
