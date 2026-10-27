@@ -66,7 +66,7 @@ jimixer.com/
 
 ## Prerequisites
 
-- Node.js 20.x (volta で管理)
+- Node.js 20.x (mise で管理)
 - AWS CLI v2
 - 個人用 AWS アカウント（ホビー用途）
 - direnv (推奨: AWS profile 自動切り替え)
@@ -76,12 +76,9 @@ jimixer.com/
 ### 1. Node.js 環境のセットアップ
 
 ```bash
-# volta のインストール (未インストールの場合)
-curl https://get.volta.sh | bash
-
-# Node.js と npm のバージョンを自動適用
+# mise.toml の Node.js をインストール
 cd jimixer.com
-volta install node@20.20.0 npm@10.8.2
+mise trust && mise install
 
 # 依存関係のインストール
 npm install
