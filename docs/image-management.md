@@ -37,7 +37,7 @@ git: website/content/
 npm run dev:gallery    # http://localhost:3001
 ```
 
-プロファイル（`jimixer-gallery`）はこのコマンドが自分で宣言するので、direnv を
+プロファイル（`jimixer-gallery`）はこのコマンドが自分で宣言するので、mise を
 通していなくても動く。権限の内訳は [aws-credentials.md](./aws-credentials.md) を参照。
 
 1. バリアントのページを開き、写真をドラッグ&ドロップする
@@ -119,7 +119,7 @@ gallery-manager 経由で追加された写真は manifest に無く、ローカ
 `AWS_PROFILE` が未設定で `default` プロファイルに落ちている可能性が高い。
 
 ```bash
-direnv exec . aws sts get-caller-identity   # 期待するユーザーか
+mise x -- aws sts get-caller-identity   # 期待するユーザーか
 ```
 
 ### `gallery:check` が「原本の欠け」で落ちる

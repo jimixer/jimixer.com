@@ -10,7 +10,7 @@ VRChat で撮影した写真を公開する個人サイト。静的サイト（`
 
 **npm script は自分でプロファイルを宣言する。** AWS を触るスクリプトは
 `AWS_PROFILE=${AWS_GALLERY_PROFILE:-jimixer-gallery}` を自分で前置きするので、
-direnv のフックが無い環境（エージェントのセッションを含む）でもそのまま動く。
+mise のフックが無い環境（エージェントのセッションを含む）でもそのまま動く。
 
 ```bash
 npm run dev:gallery
@@ -18,12 +18,12 @@ npm run gallery:upload-derivatives
 npm run gallery:check
 ```
 
-**宣言を持たないのは、生の `aws` CLI と `npx tsx` の直呼び。** こちらは `.envrc` が
+**宣言を持たないのは、生の `aws` CLI と `npx tsx` の直呼び。** こちらは `mise.toml` の `[env]` が
 読み込まれていないと `default` プロファイルに落ちて 403 になるか、意図しない資格情報で
-書き込むことになる。direnv を通すこと。
+書き込むことになる。`mise x --` を通すこと。
 
 ```bash
-direnv exec . aws s3 ls s3://gallery.jimixer.com/gallery/
+mise x -- aws s3 ls s3://gallery.jimixer.com/gallery/
 ```
 
 資格情報は IAM Identity Center の短命なもので、恒久的なアクセスキーは無い。
@@ -33,10 +33,10 @@ direnv exec . aws s3 ls s3://gallery.jimixer.com/gallery/
 広い権限が要るコマンドも、呼び出し側の環境ではなく**コマンド自身が宣言する**。
 
 ```bash
-direnv exec . npm run deploy:infra   # 中で --profile jimixer-admin を指定している
+mise x -- npm run deploy:infra   # 中で --profile jimixer-admin を指定している
 ```
 
-`deploy:infra` に direnv が要るのはプロファイルのためではなく、CDK が `.envrc` の
+`deploy:infra` に mise が要るのはプロファイルのためではなく、CDK が `mise.local.toml` の
 `AWS_ACCOUNT_ID` と `CERTIFICATE_ARN` を読むためである。
 
 プロファイルを差し替えたいときに `AWS_PROFILE=... npm run ...` と前置きしても効かない。
@@ -44,7 +44,7 @@ direnv exec . npm run deploy:infra   # 中で --profile jimixer-admin を指定�
 
 権限が足りずに 403 が出たとき、**まず疑うのは権限であってコードではない**。
 どの API にどの権限が要るかは [docs/aws-credentials.md](./docs/aws-credentials.md) にある。
-`.envrc` が無ければ `.envrc.example` をコピーして `direnv allow`。
+`mise.local.toml` が無ければ `mise.local.toml.example` をコピーして値を埋め、`mise trust`。
 
 ## ワークスペース
 

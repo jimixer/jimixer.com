@@ -17,7 +17,7 @@
 * **Styling:** Tailwind CSS 3.4.1 (カスタムフォント: JetBrains Mono, IBM Plex Sans JP)
 * **Infrastructure:** AWS (S3, CloudFront + Functions, Route 53, ACM)
 * **IaC:** AWS CDK 2.120.0 (TypeScript)
-* **Runtime:** Node.js 20.20.0 (Volta), npm workspaces
+* **Runtime:** Node.js 20.20.0 (mise), npm workspaces
 * **CI/CD:** GitHub Actions (実装済み)
 * **Content Source:**
   * Notes: note.com RSS (`https://note.com/jimixer/rss`) - Build時に静的生成
@@ -124,7 +124,7 @@
 * [x] **IAM User:** 設定済み
   * AdministratorAccess 権限
   * `~/.aws/credentials` にプロファイル設定
-  * direnv で自動プロファイル切り替え (`.envrc` で `AWS_PROFILE` 設定)
+  * mise で自動プロファイル切り替え (`mise.toml` の `[env]` で `AWS_PROFILE` 設定)
 
 ### **Cost Estimate (月額)**
 
